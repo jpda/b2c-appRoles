@@ -1,0 +1,462 @@
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="jpdab2c.onmicrosoft.com" PolicyId="B2C_1A_ConditionalAccess" PublicPolicyUri="http://jpdab2c.onmicrosoft.com/B2C_1A_ConditionalAccess" TenantObjectId="0b6270a6-46b8-4c8b-8f45-265f396bb543">
+  <!-- todo: update 'yourtenant' with your b2c tenant name -->
+  <BasePolicy>
+    <TenantId>jpdab2c.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_GitHubClaimsProvider</PolicyId>
+  </BasePolicy>
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <ClaimType Id="IP-Address">
+        <DisplayName>IP Address</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText />
+        <UserHelpText />
+      </ClaimType>
+      <ClaimType Id="responseMsg">
+        <DisplayName>responseMsg</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>A claim responsible for holding response messages to send to the relying party</AdminHelpText>
+        <UserHelpText>A claim responsible for holding response messages to send to the relying party</UserHelpText>
+        <UserInputType>Paragraph</UserInputType>
+      </ClaimType>
+      <ClaimType Id="KMSI">
+        <DisplayName>KMSI Flag</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+      <!-- CA claims  -->
+      <ClaimType Id="conditionalAccessClaimCollection">
+        <DisplayName>Conditional Access claims</DisplayName>
+        <DataType>stringCollection</DataType>
+        <AdminHelpText>The list of claims which are the result of CA check</AdminHelpText>
+      </ClaimType>
+      <ClaimType Id="trustFrameworkPolicy">
+        <DisplayName>trustFrameworkPolicy</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>TtrustFrameworkPolicy name.</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="ConditionalAccessStatus">
+        <DisplayName>The status of CA evaluation</DisplayName>
+        <DataType>stringCollection</DataType>
+        <AdminHelpText>The status of CA evaluation</AdminHelpText>
+      </ClaimType>
+      <ClaimType Id="AuthenticationMethodsUsed">
+        <DisplayName>Authentication methods used</DisplayName>
+        <DataType>stringCollection</DataType>
+        <AdminHelpText>The list of authentication methods used</AdminHelpText>
+      </ClaimType>
+      <ClaimType Id="AuthenticationMethodUsed">
+        <DisplayName>Authentication method used</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>The authentication method used</AdminHelpText>
+      </ClaimType>
+      <ClaimType Id="IsFederated">
+        <DisplayName>IsFederated</DisplayName>
+        <DataType>boolean</DataType>
+        <AdminHelpText>Is user authenticated via an external identity provider</AdminHelpText>
+      </ClaimType>
+      <ClaimType Id="IsMfaRegistered">
+        <DisplayName>IsMfaRegistered</DisplayName>
+        <DataType>boolean</DataType>
+        <AdminHelpText>Is user registered for MFA</AdminHelpText>
+      </ClaimType>
+      <ClaimType Id="isConditionalAccessOn">
+        <DisplayName>isConditionalAccessOn</DisplayName>
+        <DataType>boolean</DataType>
+      </ClaimType>
+      <ClaimType Id="CAChallengeIsMfa">
+        <DisplayName>CAChallengeIsMfa</DisplayName>
+        <DataType>boolean</DataType>
+      </ClaimType>
+      <ClaimType Id="CAChallengeIsChgPwd">
+        <DisplayName>CAChallengeIsChgPwd</DisplayName>
+        <DataType>boolean</DataType>
+      </ClaimType>
+      <ClaimType Id="CAChallengeIsBlock">
+        <DisplayName>CAChallengeIsBlock</DisplayName>
+        <DataType>boolean</DataType>
+      </ClaimType>
+      <!-- End of CA claims -->
+      <ClaimType Id="twilioSmsVerificationCode">
+        <DisplayName>Twilio Verify SMS verification code</DisplayName>
+        <DataType>string</DataType>
+        <UserInputType>TextBox</UserInputType>
+      </ClaimType>
+      <ClaimType Id="twilioVerifyChannelCode">
+        <DisplayName>Twilio Verify SMS channel id</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+      <ClaimType Id="twilioApprovalStatus">
+        <DisplayName>Twilio Verify SMS approval status</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+      <ClaimType Id="twilioFormattedPhone">
+        <DisplayName>formatted phone number for twilio's api</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+      <ClaimType Id="twilioApproved">
+        <DisplayName>Twilio approval</DisplayName>
+        <DataType>boolean</DataType>
+      </ClaimType>
+      <ClaimType Id="twilioVerify-NewPhoneEnteredIsValidated">
+        <DisplayName>New phone added but not validated</DisplayName>
+        <DataType>boolean</DataType>
+      </ClaimType>
+      <ClaimType Id="strongAuthenticationPhoneNumber-Exists">
+        <DisplayName>New phone added but not validated</DisplayName>
+        <DataType>boolean</DataType>
+      </ClaimType>
+      <ClaimType Id="twilioVerify-UserEnteredPhone">
+        <DisplayName>Enter your phone number with country code, e.g., +18001234567</DisplayName>
+        <DataType>string</DataType>
+        <UserInputType>TextBox</UserInputType>
+      </ClaimType>
+    </ClaimsSchema>
+    <ClaimsTransformations>
+      <!-- ISP - CA Transforms-->
+      <ClaimsTransformation Id="AddToAuthenticationMethodsUsed" TransformationMethod="AddItemToStringCollection">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="AuthenticationMethodUsed" TransformationClaimType="item" />
+          <InputClaim ClaimTypeReferenceId="AuthenticationMethodsUsed" TransformationClaimType="collection" />
+        </InputClaims>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="AuthenticationMethodsUsed" TransformationClaimType="collection" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="CreatePasswordAuthenticationMethodClaim" TransformationMethod="CreateStringClaim">
+        <InputParameters>
+          <InputParameter Id="value" DataType="string" Value="Password" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="AuthenticationMethodUsed" TransformationClaimType="createdClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="CreateOneTimePasscodeAuthenticationMethodClaim" TransformationMethod="CreateStringClaim">
+        <InputParameters>
+          <InputParameter Id="value" DataType="string" Value="OneTimePasscode" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="AuthenticationMethodUsed" TransformationClaimType="createdClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="IsMfaRegisteredCT" TransformationMethod="DoesClaimExist">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="IsMfaRegistered" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="SetCAChallengeIsMfa" TransformationMethod="StringCollectionContains">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="conditionalAccessClaimCollection" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="item" DataType="string" Value="mfa" />
+          <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="CAChallengeIsMfa" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="SetCAChallengeIsChgPwd" TransformationMethod="StringCollectionContains">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="conditionalAccessClaimCollection" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="item" DataType="string" Value="chg_pwd" />
+          <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="CAChallengeIsChgPwd" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="SetCAChallengeIsBlock" TransformationMethod="StringCollectionContains">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="conditionalAccessClaimCollection" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="item" DataType="string" Value="block" />
+          <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="CAChallengeIsBlock" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="NormalizePhoneNumber" TransformationMethod="StringReplace">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="oldValue" DataType="string" Value=" " />
+          <InputParameter Id="newValue" DataType="string" Value="" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="twilioFormattedPhone" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="CopyPhoneToStrongAuthenticationPhoneNumber" TransformationMethod="CopyClaim">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="twilioVerify-UserEnteredPhone" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="CopyPhoneToVerifiedStrongAuthenticationPhoneNumber" TransformationMethod="CopyClaim">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="twilioVerify-UserEnteredPhone" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="Verified.strongAuthenticationPhoneNumber" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="SetDoesPhoneExist" TransformationMethod="CompareClaimToValue">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" TransformationClaimType="inputClaim1" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="compareTo" DataType="string" Value="" />
+          <InputParameter Id="operator" DataType="string" Value="not equal" />
+          <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber-Exists" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="ProcessTwilioResponse" TransformationMethod="CompareClaimToValue">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="twilioApprovalStatus" TransformationClaimType="inputClaim1" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="compareTo" DataType="string" Value="approved" />
+          <InputParameter Id="operator" DataType="string" Value="not equal" />
+          <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="CAChallengeIsBlock" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+    </ClaimsTransformations>
+  </BuildingBlocks>
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>Local Account SignIn</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="SelfAsserted-LocalAccountSignin-Email">
+          <DisplayName>Local Account Signin</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="SignUpTarget">SignUpWithLogonEmailExchange</Item>
+            <Item Key="setting.operatingMode">Username</Item>
+            <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+            <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+            <Item Key="setting.enableRememberMe">True</Item>
+            <Item Key="UserMessageIfClaimsTransformationStringsAreNotEqual">The email addresses you provided are not the same</Item>
+          </Metadata>
+          <IncludeInSso>false</IncludeInSso>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="signInName" DefaultValue="{OIDC:LoginHint}" />
+            <InputClaim ClaimTypeReferenceId="KMSI" DefaultValue="{Context:KMSI}" AlwaysUseDefaultValue="true" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="signInName" Required="true" />
+            <OutputClaim ClaimTypeReferenceId="password" Required="true" />
+            <OutputClaim ClaimTypeReferenceId="objectId" />
+            <OutputClaim ClaimTypeReferenceId="authenticationSource" />
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="CreatePasswordAuthenticationMethodClaim" />
+            <OutputClaimsTransformation ReferenceId="AddToAuthenticationMethodsUsed" />
+          </OutputClaimsTransformations>
+          <ValidationTechnicalProfiles>
+            <ValidationTechnicalProfile ReferenceId="login-NonInteractive" />
+          </ValidationTechnicalProfiles>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+        </TechnicalProfile>
+        <TechnicalProfile Id="ConditionalAccessEvaluation">
+          <DisplayName>Conditional Access Provider</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ConditionalAccessProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="OperationType">Evaluation</Item>
+            <!-- <Item Key="ConditionalAccessPoliciesToEvaluate">[]</Item> -->
+          </Metadata>
+          <InputClaimsTransformations>
+            <InputClaimsTransformation ReferenceId="IsMfaRegisteredCT" />
+          </InputClaimsTransformations>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="UserId" />
+            <InputClaim ClaimTypeReferenceId="AuthenticationMethodsUsed" />
+            <InputClaim ClaimTypeReferenceId="IsFederated" DefaultValue="false" />
+            <InputClaim ClaimTypeReferenceId="IsMfaRegistered" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="conditionalAccessClaimCollection" PartnerClaimType="Challenges" />
+            <OutputClaim ClaimTypeReferenceId="ConditionalAccessStatus" PartnerClaimType="MultiConditionalAccessStatus" />
+          </OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="ConditionalAccessRemediation">
+          <DisplayName>Conditional Access Remediation</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ConditionalAccessProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="OperationType">Remediation</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="conditionalAccessClaimCollection" PartnerClaimType="ChallengesSatisfied" />
+          </InputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="GenerateCAClaimFlags">
+          <DisplayName>GenerateCAClaimFlags</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="CAChallengeIsMfa" />
+            <OutputClaim ClaimTypeReferenceId="CAChallengeIsChgPwd" />
+            <OutputClaim ClaimTypeReferenceId="CAChallengeIsBlock" />
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="SetCAChallengeIsMfa" />
+            <OutputClaimsTransformation ReferenceId="SetCAChallengeIsChgPwd" />
+            <OutputClaimsTransformation ReferenceId="SetCAChallengeIsBlock" />
+          </OutputClaimsTransformations>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+    <ClaimsProvider>
+      <DisplayName>Local Account</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="ShowBlockPage">
+          <DisplayName>Show Block message</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ContentDefinitionReferenceId">api.selfasserted.profileupdate</Item>
+            <Item Key="TokenLifeTimeInSeconds">3600</Item>
+            <Item Key="AllowGenerationOfClaimsWithNullValues">true</Item>
+            <Item Key="setting.showContinueButton">false</Item>
+            <Item Key="setting.showCancelButton">false</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+          </CryptographicKeys>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="responseMsg" DefaultValue="The user is blocked due to conditional access check." />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="responseMsg" />
+          </OutputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+          <EnabledForUserJourneys>Always</EnabledForUserJourneys>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+    <!-- twilio rest apis-->
+    <ClaimsProvider>
+      <DisplayName>Twilio Verify REST API</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="REST-SendTwilioVerificationRequest">
+          <DisplayName>Send verification request</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://verify.twilio.com/v2/Services/VA4acc0900337820b289fcec535e80d122/Verifications</Item>
+            <Item Key="AuthenticationType">Basic</Item>
+            <Item Key="SendClaimsIn">Form</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="BasicAuthenticationUsername" StorageReferenceId="B2C_1A_TwilioVerifyAccountId" />
+            <Key Id="BasicAuthenticationPassword" StorageReferenceId="B2C_1A_TwilioVerifyAccountKey" />
+          </CryptographicKeys>
+          <InputClaims>
+            <!--Demo: optional claims to be sent to the REST API-->
+            <InputClaim ClaimTypeReferenceId="twilioFormattedPhone" PartnerClaimType="To" />
+            <InputClaim ClaimTypeReferenceId="twilioVerifyChannelCode" PartnerClaimType="Channel" DefaultValue="sms" AlwaysUseDefaultValue="true" />
+          </InputClaims>
+          <OutputClaims>
+            <!-- <OutputClaim ClaimTypeReferenceId="loyaltyNumber" /> -->
+          </OutputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+        </TechnicalProfile>
+        <TechnicalProfile Id="REST-ValidateTwilioVerificationResponse">
+          <DisplayName>send user code</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://verify.twilio.com/v2/Services/VA4acc0900337820b289fcec535e80d122/VerificationCheck</Item>
+            <Item Key="AuthenticationType">Basic</Item>
+            <Item Key="SendClaimsIn">Form</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="BasicAuthenticationUsername" StorageReferenceId="B2C_1A_TwilioVerifyAccountId" />
+            <Key Id="BasicAuthenticationPassword" StorageReferenceId="B2C_1A_TwilioVerifyAccountKey" />
+          </CryptographicKeys>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="twilioFormattedPhone" PartnerClaimType="To" />
+            <InputClaim ClaimTypeReferenceId="twilioSmsVerificationCode" PartnerClaimType="Code" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="twilioApprovalStatus" PartnerClaimType="status" />
+            <OutputClaim ClaimTypeReferenceId="AuthenticationMethodUsed" DefaultValue="mfa" AlwaysUseDefaultValue="true" />
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="ProcessTwilioResponse" />
+            <OutputClaimsTransformation ReferenceId="AddToAuthenticationMethodsUsed" />
+          </OutputClaimsTransformations>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+        </TechnicalProfile>
+        <TechnicalProfile Id="TwilioVerify-CaptureUserCode">
+          <DisplayName>Capture user 2fa code</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="language.button_continue">Verify</Item>
+            <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="twilioSmsVerificationCode" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="executed-SelfAsserted-Input" DefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="twilioSmsVerificationCode" />
+            <!-- <OutputClaim ClaimTypeReferenceId="Verified.strongAuthenticationPhoneNumber" PartnerClaimType="twilioFormattedPhone" /> -->
+          </OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="TwilioVerify-CapturePhoneNumber">
+          <DisplayName>Capture user phone</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="language.button_continue">Verify this number</Item>
+            <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="twilioVerify-UserEnteredPhone" />
+          </InputClaims>
+          <DisplayClaims>
+            <DisplayClaim ClaimTypeReferenceId="twilioVerify-UserEnteredPhone" Required="true" />
+          </DisplayClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="twilioVerify-UserEnteredPhone" />
+            <OutputClaim ClaimTypeReferenceId="newPhoneNumberEntered" DefaultValue="true" AlwaysUseDefaultValue="true" />
+            <!-- <OutputClaim ClaimTypeReferenceId="twilioVerify-UserEnteredPhone" PartnerClaimType="strongAuthenticationPhoneNumber" /> -->
+            <!-- <OutputClaim ClaimTypeReferenceId="twilioVerify-UserEnteredPhone" PartnerClaimType="Verified.strongAuthenticationPhoneNumber" /> -->
+            <OutputClaim ClaimTypeReferenceId="twilioVerify-NewPhoneEnteredIsValidated" DefaultValue="false" AlwaysUseDefaultValue="true" />
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="CopyPhoneToStrongAuthenticationPhoneNumber" />
+            <OutputClaimsTransformation ReferenceId="CopyPhoneToVerifiedStrongAuthenticationPhoneNumber" />
+            <OutputClaimsTransformation ReferenceId="SetDoesPhoneExist" />
+            <OutputClaimsTransformation ReferenceId="NormalizePhoneNumber" />
+          </OutputClaimsTransformations>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+    <ClaimsProvider>
+      <DisplayName>Azure Active Directory</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="AAD-UserReadUsingObjectId">
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" DefaultValue="" />
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="SetDoesPhoneExist" />
+            <OutputClaimsTransformation ReferenceId="NormalizePhoneNumber" />
+          </OutputClaimsTransformations>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+</TrustFrameworkPolicy>
