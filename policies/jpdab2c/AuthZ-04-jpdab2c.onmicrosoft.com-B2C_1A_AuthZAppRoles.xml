@@ -163,20 +163,24 @@
           <DisplayName></DisplayName>
           <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
           <Metadata>
-            <Item Key="ServiceUrl">https://jpda.ngrok.io/api/</Item>
-            <Item Key="AuthenticationType">Basic</Item>
-            <Item Key="SendClaimsIn">Form</Item>
+            <Item Key="ServiceUrl">https://jpda.ngrok.io/v1.0/users/{claim1}/appRoleAssignments/{claim2}</Item>
+            <Item Key="SendClaimsIn">Url</Item>
+            <Item Key="AuthenticationType">Bearer</Item>
+            <Item Key="UseClaimAsBearerToken">bearerToken</Item>
+            <Item Key="AllowInsecureAuthInProduction">false</Item>
+            <!-- <Item Key="ResolveJsonPathsInJsonTokens">true</Item> -->
+            <Item Key="DebugMode">true</Item>
           </Metadata>
           <CryptographicKeys>
             <Key Id="BasicAuthenticationUsername" StorageReferenceId="B2C_1A_AuthZGraphClientId" />
             <Key Id="BasicAuthenticationPassword" StorageReferenceId="B2C_1A_AuthZGraphClientSecret" />
           </CryptographicKeys>
           <InputClaims>
-            <InputClaim ClaimTypeReferenceId="grant_type" DefaultValue="client_credentials" />
-            <InputClaim ClaimTypeReferenceId="scope" DefaultValue="https://jpdab2c.onmicrosoft.com/b2c-authz-func/.default" />
+            <InputClaim ClaimTypeReferenceId="objectId"/>
+            <InputClaim ClaimTypeReferenceId="targetAppId" DefaultValue="{OIDC:ClientId}"/>
           </InputClaims>
           <OutputClaims>
-            <OutputClaim ClaimTypeReferenceId="bearerToken" PartnerClaimType="access_token" />
+            <OutputClaim ClaimTypeReferenceId="roles" />
           </OutputClaims>
           <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
         </TechnicalProfile>
