@@ -6,6 +6,11 @@
             "samplingSettings": {
                 "isEnabled": true
             }
+        },
+        "logLevel": {
+            "default": "Error",
+            "AzureAdB2CAppRoleShim": "Information",
+            "Host": "Error"
         }
     }
 }

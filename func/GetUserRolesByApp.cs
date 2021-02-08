@@ -1,187 +1,79 @@
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Identity.Client;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Graph;
 
-namespace func
+namespace AzureAdB2CAppRoleShim
 {
-    public static class GetUserRolesByApp
+    public class UserAppRoleRequest
     {
-        private static readonly HttpClient _client = new HttpClient()
+        public string UserId { get; set; }
+        public string ApplicationId { get; set; }
+
+    }
+
+    public class Functions
+    {
+        private readonly GraphServiceClient _graphClient;
+        private readonly ILogger<Functions> _log;
+        public Functions(GraphServiceClient client, ILoggerFactory loggerFactory)
         {
-            BaseAddress = new Uri("https://graph.microsoft.com/v1.0/")
-        };
+            _graphClient = client;
+            _log = loggerFactory.CreateLogger<Functions>();
+        }
 
         [FunctionName("GetUserRolesByApp")]
-        public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log)
+        public async Task<IActionResult> GetUserRolesByApp([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] UserAppRoleRequest req)
         {
+            _log.LogDebug($"Received request: app {req.ApplicationId}; user {req.UserId}");
+            try
+            {
+                // https://graph.microsoft.com/v1.0/servicePrincipals?$filter=appId eq '05c77d87-2fcc-44fd-b385-ae8080afa879'&$select=id
+                var servicePrincipalSearch = await _graphClient.ServicePrincipals.Request().Select(x => new { x.Id, x.AppRoles }).Filter($"appId eq '{req.ApplicationId}'").GetAsync();
+                if (servicePrincipalSearch.Count != 1)
+                {
+                    _log.LogError($"Can't find service principal for app id {req.ApplicationId}, exiting");
+                    //throw new Exception("SP ID is returning too many or not enough - weird");
+                    return new ConflictObjectResult(new { Message = $"Can't find the service principal corresponding to app ID {req.ApplicationId}" });
+                }
 
-            // get configuration 
-            var cca = ConfidentialClientApplicationBuilder.Create("").WithClientSecret("").WithTenantId("").Build();
-            // todo: error handling
-            var graphToken = await cca.AcquireTokenForClient(new[] { "https://graph.microsoft.com/.default" }).ExecuteAsync();
+                var spOfApplication = servicePrincipalSearch.Single();
+                _log.LogDebug($"Found service principal {spOfApplication.Id} with {spOfApplication.AppRoles.Count()} app roles");
 
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", graphToken.AccessToken);
+                var availableRoles = spOfApplication.AppRoles;
 
-            // graph token
-            // inbound stuff ==> user's object ID
-            // inbound stuff ==> client_id of the application the user is accessing
+                // /users/39a0e707-d275-4860-b534-5cd1c2d2dbe1/appRoleAssignments?$filter=resourceId eq fd076aa7-1423-4587-b0f1-e160f49f679f'
+                // $"users/{userObjectId}/appRoleAssignments?$filter=resourceId eq {servicePrincipalId}&$select=principalId,resourceId,appRoleId"
+                _log.LogDebug($"Checking user's appRole assignment...");
+                var userAppRoleAssignmentListRequest = await _graphClient.Users[req.UserId]
+                    .AppRoleAssignments.Request()
+                        .Filter($"resourceId eq {spOfApplication.Id}")
+                        .Select(y => new { y.PrincipalId, y.ResourceId, y.AppRoleId })
+                    .GetAsync();
 
-            var userObjectId = "";
-            var clientId = "";
+                var userAppRoleAssignmentList = userAppRoleAssignmentListRequest.ToList();
+                _log.LogDebug($"User is a member of {userAppRoleAssignmentList.Count} appRoles");
 
-            // https://graph.microsoft.com/v1.0/servicePrincipals?$filter=appId eq '05c77d87-2fcc-44fd-b385-ae8080afa879'&$select=id
+                //$"servicePrincipal/{servicePrincipalId}/appRoles"
+                var listOfAppRoleValuesUserIsAMemberOf = spOfApplication.AppRoles.Where(x => x.IsEnabled ?? false && userAppRoleAssignmentList.Select(x => x.AppRoleId).Contains(x.Id))
+                            .Select(appRole => appRole.Value);
 
-            // translate client_id ==> service principal id
+                _log.LogDebug($"Resolved {listOfAppRoleValuesUserIsAMemberOf.Count()} appRole values: {string.Join(',', listOfAppRoleValuesUserIsAMemberOf)}");
 
-            var servicePrincipalObject = await _client.MakeGraphRequest<ServicePrincipalTranslationResponse>(
-                $"servicePrincipals?$filter=appId eq '{clientId}&$select=id'");
-
-            // var servicePrincipalTranslationQuery = $"servicePrincipals?$filter=appId eq '{clientId}&$select=id'";
-            // var servicePrincipalTranslationRequest = await _client.GetAsync(servicePrincipalTranslationQuery);
-
-            // 409 -- conflict, b2c-specific thing
-            if (!servicePrincipalObject.success) return new ConflictResult();
-
-            // var result = await System.Text.Json.JsonSerializer
-            //     .DeserializeAsync<ServicePrincipalTranslationResponse>
-            //     (await servicePrincipalTranslationRequest.Content.ReadAsStreamAsync());
-
-            var servicePrincipalId = servicePrincipalObject.thing.Id;
-
-            // /users/39a0e707-d275-4860-b534-5cd1c2d2dbe1/appRoleAssignments?$filter=resourceId eq fd076aa7-1423-4587-b0f1-e160f49f679f'
-            var appRoleAssignmentList = await _client.MakeGraphRequest<AppRoleAssignmentResponse>(
-                $"users/{userObjectId}/appRoleAssignments?$filter=resourceId eq {servicePrincipalId}&$select=principalId,resourceId,appRoleId";
-            );
-            // var appRoleAssignmentQuery = @$"users/{userObjectId}/appRoleAssignments?$filter=resourceId eq {servicePrincipalId}&$select=principalId,resourceId,appRoleId";
-            // var appRoleAssignmentRequest = await _client.GetAsync(appRoleAssignmentQuery);
-
-            if (!appRoleAssignmentList.success) return new ConflictResult();
-
-            // var appRoleAssignmentResponse = await JsonSerializer
-            //     .DeserializeAsync<AppRoleAssignmentResponse>(
-            //         await appRoleAssignmentRequest.Content.ReadAsStreamAsync()
-            //     );
-
-            //todo: figure out how much to push into extension method (include conflict or not, messages for conflict, etc)
-
-            var listOfAppRolesForUser = appRoleAssignmentList.thing.Assignments.Select(x => x.AppRoleId);
-
-            var appRolesForApplication = await _client.MakeGraphRequest<Application>(
-                $"servicePrincipal/{servicePrincipalId}/appRoles"
-            );
-
-            if (!appRolesForApplication.success) return new ConflictResult();
-
-            var listOfAppRoleValuesUserIsAMemberOf = appRolesForApplication.thing.AppRoles.Where(x => x.Enabled && listOfAppRolesForUser.Contains(x.Id))
-                        .Select(appRole => appRole.Value);
-
-            return new OkObjectResult(listOfAppRoleValuesUserIsAMemberOf);
-
-            // this is what B2C will get:
-
-            //["role1", "role2"];
-
-
-
-
-            //https://graph.microsoft.com/beta/applications/825d5509-8c13-4651-8528-51f1c6efb7d0/appRoles?$count=true
-            //https://graph.microsoft.com/v1.0/servicePrincipals?$filter=appId eq '05c77d87-2fcc-44fd-b385-ae8080afa879'&$select=id
-            //https://graph.microsoft.com/beta/trustFramework/policies/B2C_1A_AADCommonClaimsProvider/$value
-            //https://graph.microsoft.com/v1.0/servicePrincipals?$filter=appId eq '05c77d87-2fcc-44fd-b385-ae8080afa879'&$select=id
-            // https://graph.microsoft.com/v1.0/users/39a0e707-d275-4860-b534-5cd1c2d2dbe1/appRoleAssignments?$filter=resourceId eq fd076aa7-1423-4587-b0f1-e160f49f679f
-            // get the user's appRoleAssignments for that service principal/app id
-            // resolve the guid ==> value of the assigned appRoles
-            //  return roles: [ roles the user has] ;
-
-            return new OkObjectResult(responseMessage);
+                return new OkObjectResult(new { Roles = listOfAppRoleValuesUserIsAMemberOf });
+            }
+            catch (ServiceException ex)
+            {
+                if (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return new ConflictObjectResult(new { Message = "Not found - have you registered yet?" });
+                }
+                return new ConflictObjectResult(ex.Message);
+            }
         }
-    }
-
-    public static class Extensions
-    {
-        public async static Task<(bool success, T thing)> MakeGraphRequest<T>(this HttpClient client, string query)
-        {
-            var request = await client.GetAsync(query);
-
-            if (!request.IsSuccessStatusCode) return (false, default); // return something to indicate failure
-
-            return (true, await JsonSerializer
-                .DeserializeAsync<T>(
-                    await request.Content.ReadAsStreamAsync()
-                ));
-        }
-    }
-
-    public class GraphHelper
-    {
-        private readonly HttpClient _client;
-        public GraphHelper(HttpClient client)
-        {
-            _client = client;
-        }
-
-        public async Task<T> Query<T>(string query)
-        {
-            //var appRoleAssignmentQuery = @$"users/{userObjectId}/appRoleAssignments?$filter=resourceId eq {servicePrincipalId}&$select=principalId,resourceId,appRoleId";
-            var request = await _client.GetAsync(query);
-
-            if (!request.IsSuccessStatusCode) return new ConflictResult(); // return something to indicate failure
-
-            return await JsonSerializer
-                .DeserializeAsync<T>(
-                    await request.Content.ReadAsStreamAsync()
-                );
-        }
-
-    }
-
-    public class Application
-    {
-        public List<AppRole> AppRoles { get; set; }
-    }
-
-    public class AppRole
-    {
-        [JsonPropertyName("id")]
-        public string Id { get; set; }
-        [JsonPropertyName("value")]
-        public string Value { get; set; }
-        [JsonPropertyName("isEnabled")]
-        public bool Enabled { get; set; }
-    }
-
-    public class ServicePrincipalTranslationResponse
-    {
-        [JsonPropertyName("id")]
-        public string Id { get; set; }
-    }
-
-    public class AppRoleAssignmentResponse
-    {
-        [JsonPropertyName("value")]
-        public List<AppRoleAssignment> Assignments { get; set; }
-    }
-
-    public class AppRoleAssignment
-    {
-        [JsonPropertyName("resourceId")]
-        public string ResourceId { get; set; }
-        [JsonPropertyName("principalId")]
-        public string PrincipalId { get; set; }
-        [JsonPropertyName("appRoleId")]
-        public string AppRoleId { get; set; }
     }
 }
-
