@@ -12,5 +12,10 @@
             "AzureAdB2CAppRoleShim": "Information",
             "Host": "Error"
         }
+    },
+    "extensions": {
+        "http": {
+            "routePrefix": "v1.0"
+        }
     }
 }

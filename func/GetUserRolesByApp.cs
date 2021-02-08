@@ -27,7 +27,7 @@ namespace AzureAdB2CAppRoleShim
         }
 
         [FunctionName("GetUserRolesByApp")]
-        public async Task<IActionResult> GetUserRolesByApp([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] UserAppRoleRequest req)
+        public async Task<IActionResult> GetUserRolesByApp([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = "users/{userId}/appRoleAssignments/{applicationId}")] UserAppRoleRequest req)
         {
             _log.LogDebug($"Received request: app {req.ApplicationId}; user {req.UserId}");
             try

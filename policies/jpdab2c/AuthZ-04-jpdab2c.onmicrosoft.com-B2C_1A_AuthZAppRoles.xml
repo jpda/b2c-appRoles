@@ -36,7 +36,6 @@
         <DisplayName>appId user is signing into</DisplayName>
         <DataType>string</DataType>
       </ClaimType>
-      <ClaimType Id=""
     </ClaimsSchema>
     <ClaimsTransformations>
       <ClaimsTransformation Id="GetRolesFromJson" TransformationMethod="GetClaimsFromJsonArray">
@@ -60,8 +59,9 @@
     </ClaimsTransformations>
   </BuildingBlocks>
   <ClaimsProviders>
+    <!-- Graph direct claims provider, work-in-progress; pending ClaimsTransformation research -->
     <ClaimsProvider>
-      <DisplayName>Graph client token actions</DisplayName>
+      <DisplayName>Graph direct client token actions</DisplayName>
       <TechnicalProfiles>
         <TechnicalProfile Id="Graph-GetAccessToken">
           <DisplayName></DisplayName>
@@ -131,6 +131,54 @@
           <OutputClaimsTransformations>
             <OutputClaimsTransformation ReferenceId="GetRolesFromJson" />
           </OutputClaimsTransformations>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+    <!-- Function Graph proxy claims provider -->
+    <ClaimsProvider>
+      <DisplayName>Graph function proxy client token actions</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="FunctionGraph-GetAccessToken">
+          <DisplayName></DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://login.microsoftonline.com/jpdab2c.onmicrosoft.com/oauth2/v2.0/token</Item>
+            <Item Key="AuthenticationType">Basic</Item>
+            <Item Key="SendClaimsIn">Form</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="BasicAuthenticationUsername" StorageReferenceId="B2C_1A_AuthZGraphClientId" />
+            <Key Id="BasicAuthenticationPassword" StorageReferenceId="B2C_1A_AuthZGraphClientSecret" />
+          </CryptographicKeys>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="grant_type" DefaultValue="client_credentials" />
+            <InputClaim ClaimTypeReferenceId="scope" DefaultValue="https://jpdab2c.onmicrosoft.com/b2c-authz-func/.default" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="bearerToken" PartnerClaimType="access_token" />
+          </OutputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+        </TechnicalProfile>
+        <TechnicalProfile Id="FunctionGraph-GetUserRoles">
+          <DisplayName></DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://jpda.ngrok.io/api/</Item>
+            <Item Key="AuthenticationType">Basic</Item>
+            <Item Key="SendClaimsIn">Form</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="BasicAuthenticationUsername" StorageReferenceId="B2C_1A_AuthZGraphClientId" />
+            <Key Id="BasicAuthenticationPassword" StorageReferenceId="B2C_1A_AuthZGraphClientSecret" />
+          </CryptographicKeys>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="grant_type" DefaultValue="client_credentials" />
+            <InputClaim ClaimTypeReferenceId="scope" DefaultValue="https://jpdab2c.onmicrosoft.com/b2c-authz-func/.default" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="bearerToken" PartnerClaimType="access_token" />
+          </OutputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
         </TechnicalProfile>
       </TechnicalProfiles>
     </ClaimsProvider>
