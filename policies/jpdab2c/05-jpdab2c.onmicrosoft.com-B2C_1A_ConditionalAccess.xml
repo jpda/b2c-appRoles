@@ -2,7 +2,7 @@
   <!-- todo: update 'yourtenant' with your b2c tenant name -->
   <BasePolicy>
     <TenantId>jpdab2c.onmicrosoft.com</TenantId>
-    <PolicyId>B2C_1A_GitHubClaimsProvider</PolicyId>
+    <PolicyId>B2C_1A_AuthZAppRoles</PolicyId>
   </BasePolicy>
   <BuildingBlocks>
     <ClaimsSchema>

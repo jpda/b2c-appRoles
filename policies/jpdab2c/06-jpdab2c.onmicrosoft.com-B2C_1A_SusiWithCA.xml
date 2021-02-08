@@ -124,7 +124,18 @@
             <Candidate SubJourneyReferenceId="ConditionalAccess_Remediation" />
           </JourneyList>
         </OrchestrationStep>
-        <OrchestrationStep Order="11" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+           <!-- FunctionGraph-GetAccessToken -->
+        <OrchestrationStep Order="11" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GetAuthZApiToken" TechnicalProfileReferenceId="FunctionGraph-GetAccessToken" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="12" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GetAuthzData" TechnicalProfileReferenceId="FunctionGraph-GetUserRoles" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="13" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
       </OrchestrationSteps>
       <ClientDefinition ReferenceId="DefaultWeb" />
     </UserJourney>

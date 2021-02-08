@@ -28,17 +28,13 @@
         <DisplayName>appId user is signing into</DisplayName>
         <DataType>string</DataType>
       </ClaimType>
-      <!-- <ClaimType Id="userId">
-        <DisplayName>scope</DisplayName>
-        <DataType>string</DataType>
-      </ClaimType> -->
       <ClaimType Id="graphAppRoleOutput">
         <DisplayName>appId user is signing into</DisplayName>
         <DataType>string</DataType>
       </ClaimType>
     </ClaimsSchema>
     <ClaimsTransformations>
-      <ClaimsTransformation Id="GetRolesFromJson" TransformationMethod="GetClaimsFromJsonArray">
+      <!-- <ClaimsTransformation Id="GetRolesFromJson" TransformationMethod="GetClaimsFromJsonArray">
         <InputClaims>
           <InputClaim ClaimTypeReferenceId="graphAppRoleOutput" TransformationClaimType="jsonSource" />
         </InputClaims>
@@ -55,7 +51,7 @@
           <OutputClaim ClaimTypeReferenceId="active" />
           <OutputClaim ClaimTypeReferenceId="birthdate" />
         </OutputClaims>
-      </ClaimsTransformation>
+      </ClaimsTransformation> -->
     </ClaimsTransformations>
   </BuildingBlocks>
   <ClaimsProviders>
@@ -128,9 +124,9 @@
           <OutputClaims>
             <OutputClaim ClaimTypeReferenceId="graphAppRoleOutput" />
           </OutputClaims>
-          <OutputClaimsTransformations>
+          <!-- <OutputClaimsTransformations>
             <OutputClaimsTransformation ReferenceId="GetRolesFromJson" />
-          </OutputClaimsTransformations>
+          </OutputClaimsTransformations> -->
         </TechnicalProfile>
       </TechnicalProfiles>
     </ClaimsProvider>
@@ -163,7 +159,7 @@
           <DisplayName></DisplayName>
           <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
           <Metadata>
-            <Item Key="ServiceUrl">https://jpda.ngrok.io/v1.0/users/{claim1}/appRoleAssignments/{claim2}</Item>
+            <Item Key="ServiceUrl">https://jpda.ngrok.io/v1.0/users/{objectId}/appRoleAssignments/{targetAppId}</Item>
             <Item Key="SendClaimsIn">Url</Item>
             <Item Key="AuthenticationType">Bearer</Item>
             <Item Key="UseClaimAsBearerToken">bearerToken</Item>
@@ -171,11 +167,8 @@
             <!-- <Item Key="ResolveJsonPathsInJsonTokens">true</Item> -->
             <Item Key="DebugMode">true</Item>
           </Metadata>
-          <CryptographicKeys>
-            <Key Id="BasicAuthenticationUsername" StorageReferenceId="B2C_1A_AuthZGraphClientId" />
-            <Key Id="BasicAuthenticationPassword" StorageReferenceId="B2C_1A_AuthZGraphClientSecret" />
-          </CryptographicKeys>
           <InputClaims>
+            <InputClaim ClaimTypeReferenceId="bearerToken"/>
             <InputClaim ClaimTypeReferenceId="objectId"/>
             <InputClaim ClaimTypeReferenceId="targetAppId" DefaultValue="{OIDC:ClientId}"/>
           </InputClaims>
