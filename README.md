@@ -1,4 +1,4 @@
-# Using App Roles in B2C
+# Using App Roles in Azure AD B2C
 
 ⚠️ this repo is not ready for use ⚠️
 
