@@ -37,7 +37,6 @@ As Azure AD's built-in role administration isn't granular enough (alternatively,
 >ℹ️ Notes on above
 >
 > The 'ApplicationAdministrator' role is an arbitrary role - the name doesn't matter, provided it is consistent.
->
 > Invitations need a design - presumably an allow-list of domains <-> organization IDs
 
 ## work in progress - this repo is not yet ready for use
