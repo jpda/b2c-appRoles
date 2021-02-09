@@ -18,6 +18,28 @@ As of now, Graph calls are proxied via an Azure Function until the correct `Clai
 - Flexible
 - Durable against downstream API changes
 - Useful for calling additional APIs (e.g., a business system or supplementary authorization system)
+- More caching/resiliency options
+
+## Graph authorization
+
+Regardless of the mechanism to connect to Graph (either directly or via proxy), Graph authorization is done via `client_credentials` - which means credentials should (as always) be handled with care. The permissions on these credentials are moderately privileged.
+
+Plumbing roles:
+
+- [`Applications.Read.All`](https://docs.microsoft.com/en-us/graph/api/serviceprincipal-get?view=graph-rest-1.0&tabs=http) - for retrieving app data at sign-in time
+- [`AppRoleAssignment.Read.All`](https://docs.microsoft.com/en-us/graph/api/serviceprincipal-list-approleassignments?view=graph-rest-1.0&tabs=http) - for retrieving app role assignments
+
+Adminstrative UI roles:
+
+- [`AppRoleAssignment.ReadWrite.All`](https://docs.microsoft.com/en-us/graph/api/serviceprincipal-post-approleassignments?view=graph-rest-1.0&tabs=http) - for managing app role assignments
+- [`User.Read.All`](https://docs.microsoft.com/en-us/graph/api/user-list?view=graph-rest-1.0&tabs=http) - for querying users, e.g., 'the people picker'
+
+Optional admin UI permissions:
+
+- [`Application.ReadWrite.All`](https://docs.microsoft.com/en-us/graph/api/application-update?view=graph-rest-1.0&tabs=http) - for creating new app roles (e.g., allowing a delegated administrator to create new app roles)
+- [`GroupMember.Read.All`](https://docs.microsoft.com/en-us/graph/api/group-list-members?view=graph-rest-1.0&tabs=http) - for assigning groups to roles
+
+These permissions can be on the same application registration, or preferably on two different app registrations - one for reading role data, the other for administration. Note that these are *application* permissions, not user-delegated permissions. The users of this portal with be authorized separately via an app role membership (see below).
 
 ## delegated role administration UI
 
@@ -31,17 +53,15 @@ As Azure AD's built-in role administration isn't granular enough (alternatively,
   - I am allowed to invite users from any organization*
 - I am an employee of Contoso (customer), the first one to use Fabrikam's app.
   - My organization has an auto-generated ID (123)
-  - I am only allowed to search for other Contoso users (e.g., organization_id == 123)
-  - I am only allowed to assign roles to other Contoso users (e.g., organization_id == 123)
+  - I am only allowed to search for other Contoso users (e.g., `organization_id == 123`)
+  - I am only allowed to assign roles to other Contoso users (e.g., `organization_id == 123`)
 
 >ℹ️ Notes on above
 >
 > The 'ApplicationAdministrator' role is an arbitrary role - the name doesn't matter, provided it is consistent.
 > Invitations need a design - presumably an allow-list of domains <-> organization IDs
 
-## work in progress - this repo is not yet ready for use
-
-todo:
+## work to do
 
 - figure out the correct `ClaimsTransformation` for parsing Graph data without external compute
 - deployment template (e.g., 'configure my tenant')
