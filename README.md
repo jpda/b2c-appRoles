@@ -22,7 +22,7 @@ As of now, Graph calls are proxied via an Azure Function until the correct `Clai
 - Useful for calling additional APIs (e.g., a business system or supplementary authorization system)
 - More caching/resiliency options
 
-[!docs/func-proxy-plumbing.png]
+![diagram](docs/func-proxy-plumbing.png "function proxy runtime diagram")
 
 ## Graph authorization
 
