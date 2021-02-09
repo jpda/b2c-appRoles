@@ -6,6 +6,10 @@ A project for building a basic role-based authorization system using existing Az
 
 There are two primary components: plumbing for fetching & injecting claims and an administrative interface with more granularity than normal AAD can provide.
 
+## prerequisites
+
+You'll probably want to be relatively familiar with [Azure AD App Roles](https://docs.microsoft.com/en-us/azure/architecture/multitenant-identity/app-roles) and B2C [custom policy](https://docs.microsoft.com/en-us/azure/active-directory-b2c/custom-policy-get-started). This project assumes a base understanding of AAD, B2C and multitenancy (both the concept of multitenancy and Azure AD Multitenancy).
+
 ## plumbing; aka, getting a `roles` claim into the claimset
 
 Ideally, we use a combination of Graph and B2C custom policy for interrogating AAD, getting the user's role memberships and injecting them at sign-in time. The long-term plan is to use B2C custom policy and a direct connection to the Graph API. This has a few distinct advantages:
@@ -67,9 +71,14 @@ As Azure AD's built-in role administration isn't granular enough (alternatively,
 
 ![admin-diagram](docs/admin.png "admin diagram")
 
+## included b2c policies
+
+These policies include more than only authorization; these extras will be removed or separated in a later update. They include conditional access via Twilio, home realm discovery and role injection from a variety of sources.
+
 ## work to do
 
 - figure out the correct `ClaimsTransformation` for parsing Graph data without external compute
 - deployment template (e.g., 'configure my tenant')
 - delegated admin UI
 - design the invite system
+- policy overview
