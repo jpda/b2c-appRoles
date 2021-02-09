@@ -65,6 +65,8 @@ As Azure AD's built-in role administration isn't granular enough (alternatively,
 > The 'ApplicationAdministrator' role is an arbitrary role - the name doesn't matter, provided it is consistent.
 > Invitations need a design - presumably an allow-list of domains <-> organization IDs
 
+![admin-diagram](docs/admin.png "admin diagram")
+
 ## work to do
 
 - figure out the correct `ClaimsTransformation` for parsing Graph data without external compute
