@@ -22,6 +22,8 @@ As of now, Graph calls are proxied via an Azure Function until the correct `Clai
 - Useful for calling additional APIs (e.g., a business system or supplementary authorization system)
 - More caching/resiliency options
 
+[!docs/func-proxy-plumbing.png]
+
 ## Graph authorization
 
 Regardless of the mechanism to connect to Graph (either directly or via proxy), Graph authorization is done via `client_credentials` - which means credentials should (as always) be handled with care. The permissions on these credentials are moderately privileged.
