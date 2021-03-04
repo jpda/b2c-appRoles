@@ -30,13 +30,38 @@ namespace admin_func
         Task<Organization> GetOrganization(string organizationId);
         Task<IEnumerable<Organization>> GetOrganizations();
         Task<IEnumerable<User>> GetOrganizationUsers();
+        Task<User> GetOrganizationUser();
+    }
+
+    public class FilteredOrganizationRepository : IOrganizationRepository
+    {
+        public Task<Organization> GetOrganization(string organizationId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<Organization>> GetOrganizations()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<User> GetOrganizationUser()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<User>> GetOrganizationUsers()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class UserFunctions
     {
-        public UserFunctions()
+        private readonly IOrganizationRepository _repo;
+        public UserFunctions(IOrganizationRepository orgRepo)
         {
-
+            _repo = orgRepo;
         }
 
         // these functions are limited by default to the user's scope, e.g., get _my_ organizations
@@ -44,14 +69,14 @@ namespace admin_func
         public async Task<IActionResult> GetOrganizations([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "organization")] HttpRequest request)
         {
             // not a direct proxy, but will return the user's b2c 'organizations'
-            return new OkResult();
+            return new OkObjectResult(await _repo.GetOrganizations());
         }
 
         [FunctionName("GetOrganization")]
         public async Task<IActionResult> GetOrganization([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "organization/{organizationId}")] HttpRequest request, string organizationId)
         {
             // not a direct proxy, but will return the user's b2c 'organizations'
-            return new OkResult();
+            return new OkObjectResult(await _repo.GetOrganizations());
         }
 
         [FunctionName("GetOrganizationUsers")]
