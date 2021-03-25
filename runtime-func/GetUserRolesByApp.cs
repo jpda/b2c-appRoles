@@ -59,7 +59,7 @@ namespace AzureAdB2CAppRoleShim
                 _log.LogDebug($"User is a member of {userAppRoleAssignmentList.Count} appRoles");
 
                 //$"servicePrincipal/{servicePrincipalId}/appRoles"
-                var listOfAppRoleValuesUserIsAMemberOf = spOfApplication.AppRoles.Where(x => x.IsEnabled ?? false && userAppRoleAssignmentList.Select(x => x.AppRoleId).Contains(x.Id))
+                var listOfAppRoleValuesUserIsAMemberOf = spOfApplication.AppRoles.Where(x => (x.IsEnabled ?? false) && userAppRoleAssignmentList.Select(x => x.AppRoleId).Contains(x.Id))
                             .Select(appRole => appRole.Value);
 
                 _log.LogDebug($"Resolved {listOfAppRoleValuesUserIsAMemberOf.Count()} appRole values: {string.Join(',', listOfAppRoleValuesUserIsAMemberOf)}");
