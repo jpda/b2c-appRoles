@@ -25,7 +25,7 @@ namespace admin_func
             this.apiAuthentication = apiAuthentication;
         }
 
-        private async Task<IActionResult> RunFilteredRequest<T>(IHeaderDictionary headers, System.Func<IApplicationRepository, ClaimsPrincipal, Task<T>> work)
+        private async Task<IActionResult> RunFilteredRequest<T>(IHeaderDictionary headers, System.Func<IApplicationRepository, string, Task<T>> work)
         {
             var authResult = await this.apiAuthentication.AuthenticateAsync(headers);
             if (authResult.Failed) return new UnauthorizedObjectResult(authResult.FailureReason);
@@ -34,7 +34,8 @@ namespace admin_func
             if (orgId == null) return new UnauthorizedObjectResult(new { Message = "User is not a member of an organization" });
 
             var repo = _appRepoFactory.CreateForOrgId(orgId.Value);
-            return new OkObjectResult(await work(repo, authResult.User));
+            var userId = authResult.User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
+            return new OkObjectResult(await work(repo, userId));
         }
 
         // these functions are limited by default to the user's scope, e.g., get _my_ applications, where i am an administrator (e.g., have ApplicationAdministrator role)
@@ -42,14 +43,7 @@ namespace admin_func
         public async Task<IActionResult> GetApplications(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "applications")] HttpRequest req)
         {
-            // var authResult = await this.apiAuthentication.AuthenticateAsync(req.Headers);
-            // if (authResult.Failed) return new UnauthorizedObjectResult(authResult.FailureReason);
-
-            // var orgId = authResult.User.Claims.SingleOrDefault(x => x.Type == ORGID_EXTENSION);
-            // if (orgId == null) return new UnauthorizedObjectResult(new { Message = "User is not a member of an organization" });
-
-            // var repo = _appRepoFactory.CreateForOrgId(orgId.Value);
-            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetApplications(user.Claims.Single(x => x.Type == "oid").Value));
+            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetApplications(user));
         }
 
         [FunctionName("GetApplication")]
@@ -63,9 +57,9 @@ namespace admin_func
             // if (orgId == null) return new UnauthorizedObjectResult(new { Message = "User is not a member of an organization" });
 
             // var repo = _appRepoFactory.CreateForOrgId(orgId.Value);
-            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetApplication(user.Claims.Single(x => x.Type == "oid").Value, servicePrincipalId));
+            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetApplication(user, servicePrincipalId));
 
-            //return new OkObjectResult(await repo.GetApplication(authResult.User.Claims.Single(x => x.Type == "oid").Value, servicePrincipalId));
+            //return new OkObjectResult(await repo.GetApplication(authResult.User, servicePrincipalId));
         }
 
         // https://graph.microsoft.com/v1.0/applications/825d5509-8c13-4651-8528-51f1c6efb7d0/appRoles
@@ -82,7 +76,7 @@ namespace admin_func
 
             // var repo = _appRepoFactory.CreateForOrgId(orgId.Value);
 
-            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetAppRolesByServicePrincipal(user.Claims.Single(x => x.Type == "oid").Value, servicePrincipalId));
+            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetAppRolesByServicePrincipal(user, servicePrincipalId));
         }
 
         // $filter=appRoles/any(x:x/id eq '1f861d87-4256-4563-bec8-cda2e0b925a7')
@@ -100,7 +94,7 @@ namespace admin_func
             [HttpTrigger(AuthorizationLevel.Anonymous, "get",
                 Route = "servicePrincipals/{servicePrincipalId}/appRoleAssignedTo")] HttpRequest req, string servicePrincipalId)
         {
-            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetAppRoleAssignmentsByServicePrincipal(user.Claims.Single(x => x.Type == "oid").Value, servicePrincipalId));
+            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetAppRoleAssignmentsByServicePrincipal(user, servicePrincipalId));
         }
 
         // resolve app id --> service principal id
@@ -113,7 +107,7 @@ namespace admin_func
         {
             var assignmentRequest = JsonSerializer.Deserialize<AppRoleAssignment>(await new System.IO.StreamReader(req.Body).ReadToEndAsync());
             return await RunFilteredRequest(req.Headers,
-                (repo, user) => repo.AssignAppRole(user.Claims.Single(x => x.Type == "oid").Value, servicePrincipalId, servicePrincipalId, assignmentRequest.AppRoleId.ToString()));
+                (repo, user) => repo.AssignAppRole(user, servicePrincipalId, servicePrincipalId, assignmentRequest.AppRoleId.ToString()));
         }
 
         [FunctionName("AddApplicationRole")]
