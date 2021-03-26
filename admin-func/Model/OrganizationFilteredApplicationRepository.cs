@@ -6,10 +6,8 @@ using System.Linq;
 
 namespace admin_func
 {
-    // apps & service principals are tightly related but not the same. we want to greatly trim down on graph calls
-    // this means we're going to say 'applications' but what we really mean is 'service principals' - 
-    // a service principal is essentially an 'instance' of an application - but since these are single-tenant apps,
-    // the service principal & application will largely have the same properties
+    // the factory is here to give us org-scoped repositories - don't really like this
+    // will probably revise in the future - but it is here for now
     public class ApplicationRepositoryFactory
     {
         private readonly GraphServiceClient _graphClient;
@@ -42,39 +40,45 @@ namespace admin_func
             throw new NotImplementedException();
         }
 
-        public Task<UserApplication> GetApplication(string userId, string resourceId)
+        public Task<IEnumerable<AppRoleAssignment>> GetAppRoleAssignmentsByResource(string userId, string resourceId)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<UserApplication>> GetApplications(string userId)
+        public Task<IEnumerable<AppRole>> GetAppRolesByResource(string userId, string resourceId)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<AppRoleAssignment>> GetAppRoleAssignmentsByServicePrincipal(string userId, string servicePrincipalId)
+        public Task<UserApplication> GetResource(string userId, string resourceId)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<AppRole>> GetAppRolesByServicePrincipal(string userId, string resourceId)
+        public Task<IEnumerable<UserApplication>> GetResources(string userId)
         {
             throw new NotImplementedException();
         }
     }
 
+    // this repository is filtered based on the user
     public class OrganizationFilteredApplicationRepository : FilteredRepository, IApplicationRepository
     {
         // todo: move to config and document, document, document
         private Guid ADMIN_APPROLE_ID = Guid.Parse("b3e0dfe9-f58d-4c35-97d3-a4efc954ba6e");
         public OrganizationFilteredApplicationRepository(GraphServiceClient client, string orgId) : base(client, orgId) { }
 
-        // apps the user is allowed to administer _only_
-        public async Task<IEnumerable<UserApplication>> GetApplications(string userId)
+        // apps the user is allowed to administer _only_, based on membership in the ADMIN_APPROLE_ID role
+        // this returns resourceId, which is technically the service principal id, not the application id itself
+        // because of this, while it is called Applications, it's really returning service principal ids
+        // this is OK and helps cut down on calls, since AppRoleAssignment is done via the resourceId (aka the ServicePrincipalId)
+        public async Task<IEnumerable<UserApplication>> GetResources(string userId)
         {
             // get the user's app roles
             var assignments = await _graphClient.Users[userId]
                 .AppRoleAssignments
+                // graph does not yet supporting filtering on appRoleId in assignments, in talks to get this field added
+                // that filter will trim this call considerably
                 .Request()
                 .Select("appRoleId,principalId,resourceId,resourceDisplayName")
                 .GetAsync();
@@ -83,17 +87,19 @@ namespace admin_func
             var apps = assignments.Where(y => y.AppRoleId == ADMIN_APPROLE_ID);
             return apps.Select(x => new UserApplication()
             {
-                ServicePrincipalId = x.ResourceId?.ToString(),
+                ResourceId = x.ResourceId?.ToString(),
                 DisplayName = x.ResourceDisplayName,
                 //UserAssignedAppRoles = assignments?.Where(x=>ToList()
             });
         }
 
-        public async Task<UserApplication> GetApplication(string userId, string resourceId)
+        public async Task<UserApplication> GetResource(string userId, string resourceId)
         {
             // get the user's app roles
             var assignments = await _graphClient.Users[userId]
                 .AppRoleAssignments
+                // graph does not yet supporting filtering on appRoleId in assignments, in talks to get this field added
+                // that filter will trim this call considerably
                 .Request()
                 .Select("appRoleId,principalId,resourceId,resourceDisplayName")
                 .GetAsync();
@@ -104,13 +110,13 @@ namespace admin_func
 
             return new UserApplication()
             {
-                ServicePrincipalId = app.ResourceId?.ToString(),
+                ResourceId = app.ResourceId?.ToString(),
                 DisplayName = app.ResourceDisplayName,
                 UserAssignedAppRoles = assignments?.ToList()
             };
         }
 
-        public async Task<IEnumerable<AppRole>> GetAppRolesByServicePrincipal(string userId, string resourceId)
+        public async Task<IEnumerable<AppRole>> GetAppRolesByResource(string userId, string resourceId)
         {
             // get the user's app roles
             var assignments = await _graphClient.Users[userId]
@@ -190,12 +196,13 @@ namespace admin_func
             return null;
         }
 
-        // todo: this will have to be paged & searchable- too much potential to be too large
-        public async Task<IEnumerable<AppRoleAssignment>> GetAppRoleAssignmentsByServicePrincipal(string userId, string servicePrincipalId)
+        // todo: this will have to be paged & searchable - too much potential to be too large
+        // todo: cache this
+        public async Task<IEnumerable<AppRoleAssignment>> GetAppRoleAssignmentsByResource(string userId, string resourceId)
         {
             // get user org
 
-            var assignments = await _graphClient.ServicePrincipals[servicePrincipalId]
+            var assignments = await _graphClient.ServicePrincipals[resourceId]
                 .AppRoleAssignedTo
                 .Request()
                 .Select("appRoleId,principalId,resourceId,resourceDisplayName")
@@ -203,7 +210,7 @@ namespace admin_func
 
             // get the user's app roles
             // filter to those they can administer
-            var app = assignments.SingleOrDefault(y => y.AppRoleId == ADMIN_APPROLE_ID && y.ResourceId == Guid.Parse(servicePrincipalId));
+            var app = assignments.SingleOrDefault(y => y.AppRoleId == ADMIN_APPROLE_ID && y.ResourceId == Guid.Parse(resourceId));
             if (app == null) return null;
 
             // get users in org --- eeeeeeeek

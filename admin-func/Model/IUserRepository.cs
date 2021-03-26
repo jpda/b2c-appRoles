@@ -22,5 +22,6 @@ namespace admin_func
         Task<User> FindUserBySignInName(string userSignInName);
         Task<IEnumerable<AppRoleAssignment>> GetUserAppRoleAssignments(User u);
         Task<IEnumerable<AppRoleAssignment>> GetUserAppRoleAssignments(string userObjectId);
+        Task<User> SetUserOrganization(OrganizationMembership membership);
     }
 }

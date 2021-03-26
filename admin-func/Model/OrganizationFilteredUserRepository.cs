@@ -105,5 +105,38 @@ namespace admin_func
             }
             return new List<AppRoleAssignment>();
         }
+
+        public async Task<User> SetUserOrganization(OrganizationMembership membership)
+        {
+            if (membership.OrgId != _orgId) return null; // get out, user is trying to add a user to a different org than their own
+
+            // get the target user
+            var userRequest = _graphClient.Users[membership.UserId]
+              .Request()
+              .Select(userFieldSelection)
+              ;
+            var user = await userRequest.GetAsync();
+
+            if (!user.AdditionalData.Any())  // no org, let's set a new one
+            {
+                user.AdditionalData[orgIdExtension] = membership.OrgId;
+                user.AdditionalData[orgRoleExtension] = membership.Role;
+                await userRequest.UpdateAsync(user);
+                return user;
+            }
+
+            if (user.AdditionalData.ContainsKey(orgIdExtension))
+            {
+                var orgData = user.AdditionalData[orgIdExtension].ToString();
+                if (string.Equals(orgData, _orgId, StringComparison.OrdinalIgnoreCase))
+                {
+                    // already in org, set role
+                    user.AdditionalData[orgRoleExtension] = membership.Role;
+                    await userRequest.UpdateAsync(user);
+                    return user;
+                }
+            }
+            return user;
+        }
     }
 }

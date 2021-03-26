@@ -92,14 +92,5 @@ namespace admin_func
             return await RunFilteredRequest(req.Headers,
                 (repo, user) => repo.AssignAppRole(user, servicePrincipalId, servicePrincipalId, assignmentRequest.AppRoleId.ToString()));
         }
-
-        [FunctionName("AddApplicationRole")]
-        public async Task<IActionResult> AddApplicationRole(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "patch",
-                Route = "applications/{applicationId}")] HttpRequest req, string applicationId, AppRole appRole)
-        {
-            // todo
-            return new OkResult();
-        }
     }
 }

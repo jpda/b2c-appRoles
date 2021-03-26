@@ -6,6 +6,7 @@
     <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Azure.Data.Tables" Version="12.0.0-beta.6" />
     <PackageReference Include="AzureFunctions.OidcAuthentication" Version="1.0.4" />
     <PackageReference Include="Microsoft.IdentityModel.Protocols" Version="6.7.1.0" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.11" />
