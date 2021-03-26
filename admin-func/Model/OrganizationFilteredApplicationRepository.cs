@@ -179,8 +179,6 @@ namespace admin_func
             //assignments.Intersect()
             // todo: resolve role values
             return assignments.Where(x => users.Any(u => u.Id == x.PrincipalId.ToString()));
-            // oof 
         }
-
     }
 }
