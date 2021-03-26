@@ -11,6 +11,6 @@ namespace admin_func_test
 
         }
 
-        public void 
+        
     }
 }
