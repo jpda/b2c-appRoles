@@ -50,16 +50,7 @@ namespace admin_func
         public async Task<IActionResult> GetApplication(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "servicePrincipals/{servicePrincipalId}")] HttpRequest req, string servicePrincipalId)
         {
-            // var authResult = await this.apiAuthentication.AuthenticateAsync(req.Headers);
-            // if (authResult.Failed) return new UnauthorizedObjectResult(authResult.FailureReason);
-
-            // var orgId = authResult.User.Claims.SingleOrDefault(x => x.Type == ORGID_EXTENSION);
-            // if (orgId == null) return new UnauthorizedObjectResult(new { Message = "User is not a member of an organization" });
-
-            // var repo = _appRepoFactory.CreateForOrgId(orgId.Value);
             return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetApplication(user, servicePrincipalId));
-
-            //return new OkObjectResult(await repo.GetApplication(authResult.User, servicePrincipalId));
         }
 
         // https://graph.microsoft.com/v1.0/applications/825d5509-8c13-4651-8528-51f1c6efb7d0/appRoles
@@ -68,14 +59,6 @@ namespace admin_func
         public async Task<IActionResult> GetServicePrincipalRoles(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "servicePrincipals/{servicePrincipalId}/appRoles")] HttpRequest req, string servicePrincipalId)
         {
-            // var authResult = await this.apiAuthentication.AuthenticateAsync(req.Headers);
-            // if (authResult.Failed) return new UnauthorizedObjectResult(authResult.FailureReason);
-
-            // var orgId = authResult.User.Claims.SingleOrDefault(x => x.Type == ORGID_EXTENSION);
-            // if (orgId == null) return new UnauthorizedObjectResult(new { Message = "User is not a member of an organization" });
-
-            // var repo = _appRepoFactory.CreateForOrgId(orgId.Value);
-
             return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetAppRolesByServicePrincipal(user, servicePrincipalId));
         }
 

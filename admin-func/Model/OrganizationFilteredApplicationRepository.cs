@@ -21,6 +21,46 @@ namespace admin_func
         {
             return new OrganizationFilteredApplicationRepository(_graphClient, orgId);
         }
+
+        public IApplicationRepository Create()
+        {
+            return new GlobalApplicationRepository(_graphClient);
+        }
+    }
+
+    // strictly for global administrators - people who can see everything in the directory, no org filtering
+    public class GlobalApplicationRepository : IApplicationRepository
+    {
+        private readonly GraphServiceClient _graphClient;
+        public GlobalApplicationRepository(GraphServiceClient client)
+        {
+            _graphClient = client;
+        }
+
+        public Task<AppRoleAssignment> AssignAppRole(string userId, string principalId, string resourceId, string appRoleId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<UserApplication> GetApplication(string userId, string resourceId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<UserApplication>> GetApplications(string userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<AppRoleAssignment>> GetAppRoleAssignmentsByServicePrincipal(string userId, string servicePrincipalId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<AppRole>> GetAppRolesByServicePrincipal(string userId, string resourceId)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class OrganizationFilteredApplicationRepository : FilteredRepository, IApplicationRepository
