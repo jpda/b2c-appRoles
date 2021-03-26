@@ -31,12 +31,11 @@ public class Startup : FunctionsStartup
         var configuration = builder.GetContext().Configuration;
 
         builder.Services.AddLogging();
-        builder.Services.AddOptions<MsalTokenProviderConfiguration>()
+        builder.Services.AddOptions<AzureAdAdminConfiguration>()
             .Configure<IConfiguration>((options, configuration) =>
             {
                 configuration.GetSection("AzureAd").Bind(options);
             });
-
         builder.Services.AddSingleton<IAuthenticationProvider, MsalTokenProvider>();
         // todo: you gotta be kidding me
         builder.Services.AddSingleton<string>("https://graph.microsoft.com/v1.0/");
@@ -48,7 +47,7 @@ public class Startup : FunctionsStartup
     }
 }
 
-public class MsalTokenProviderConfiguration
+public class AzureAdAdminConfiguration
 {
     public string ClientId { get; set; }
     public string ClientSecret { get; set; }
@@ -63,10 +62,10 @@ public class MsalTokenProviderConfiguration
 
 public class MsalTokenProvider : IAuthenticationProvider
 {
-    private readonly MsalTokenProviderConfiguration _config;
+    private readonly AzureAdAdminConfiguration _config;
     public readonly IConfidentialClientApplication _client;
 
-    public MsalTokenProvider(IOptions<MsalTokenProviderConfiguration> opts)
+    public MsalTokenProvider(IOptions<AzureAdAdminConfiguration> opts)
     {
         _config = opts.Value;
 

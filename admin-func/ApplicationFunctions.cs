@@ -43,14 +43,14 @@ namespace admin_func
         public async Task<IActionResult> GetApplications(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "applications")] HttpRequest req)
         {
-            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetApplications(user));
+            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetResources(user));
         }
 
         [FunctionName("GetApplication")]
         public async Task<IActionResult> GetApplication(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "servicePrincipals/{servicePrincipalId}")] HttpRequest req, string servicePrincipalId)
         {
-            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetApplication(user, servicePrincipalId));
+            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetResource(user, servicePrincipalId));
         }
 
         // https://graph.microsoft.com/v1.0/applications/825d5509-8c13-4651-8528-51f1c6efb7d0/appRoles
@@ -59,7 +59,7 @@ namespace admin_func
         public async Task<IActionResult> GetServicePrincipalRoles(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "servicePrincipals/{servicePrincipalId}/appRoles")] HttpRequest req, string servicePrincipalId)
         {
-            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetAppRolesByServicePrincipal(user, servicePrincipalId));
+            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetAppRolesByResource(user, servicePrincipalId));
         }
 
         // $filter=appRoles/any(x:x/id eq '1f861d87-4256-4563-bec8-cda2e0b925a7')
@@ -77,7 +77,7 @@ namespace admin_func
             [HttpTrigger(AuthorizationLevel.Anonymous, "get",
                 Route = "servicePrincipals/{servicePrincipalId}/appRoleAssignedTo")] HttpRequest req, string servicePrincipalId)
         {
-            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetAppRoleAssignmentsByServicePrincipal(user, servicePrincipalId));
+            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetAppRoleAssignmentsByResource(user, servicePrincipalId));
         }
 
         // resolve app id --> service principal id
