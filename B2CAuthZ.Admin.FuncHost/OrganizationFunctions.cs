@@ -15,25 +15,26 @@ namespace B2CAuthZ.Admin.FuncHost
     public class OrganizationFunctions
     {
         private readonly IOrganizationRepository _repo;
-        private readonly IApiAuthentication apiAuthentication;
+        private readonly IApiAuthentication _apiAuthentication;
         private const string ORGID_EXTENSION = "extension_OrgId";
         private readonly UserRepositoryFactory _userRepoFactory;
 
-        public OrganizationFunctions(IOrganizationRepository repo, UserRepositoryFactory repoFactory)
+        public OrganizationFunctions(IOrganizationRepository repo, UserRepositoryFactory repoFactory, IApiAuthentication apiAuthentication)
         {
             _repo = repo;
             _userRepoFactory = repoFactory;
+            _apiAuthentication = apiAuthentication;
         }
 
         private async Task<IActionResult> RunFilteredRequest<T>(IHeaderDictionary headers, System.Func<IUserRepository, string, Task<T>> work)
         {
-            var authResult = await this.apiAuthentication.AuthenticateAsync(headers);
+            var authResult = await _apiAuthentication.AuthenticateAsync(headers);
             if (authResult.Failed) return new UnauthorizedObjectResult(authResult.FailureReason);
 
             var orgId = authResult.User.Claims.SingleOrDefault(x => x.Type == ORGID_EXTENSION);
             if (orgId == null) return new UnauthorizedObjectResult(new { Message = "User is not a member of an organization" });
 
-            var repo = _userRepoFactory.CreateForOrgId(orgId.Value);
+            var repo = _userRepoFactory.CreateForOrgId(authResult.User);
             var userId = authResult.User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
             return new OkObjectResult(await work(repo, userId));
         }

@@ -1,16 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Graph;
-using System.Linq;
 using Azure.Data.Tables;
 using Azure;
 
 namespace B2CAuthZ.Admin
 {
-
-    // organizations themselves will need to be stored somewhere, as we have nowhere to store
-    // in graph - this uses azure table storage;
+    // organizations themselves will need to be stored somewhere,
+    // as we have nowhere to store in graph - this uses azure table storage;
     public class OrganizationEntity : ITableEntity
     {
         public OrganizationEntity() { }
@@ -26,45 +22,6 @@ namespace B2CAuthZ.Admin
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
-    }
-
-    public class OrganizationMembership
-    {
-        public string UserId { get; set; }
-        public string OrgId { get; set; }
-        public string Role { get; set; }
-    }
-
-    public interface IOrganizationRepository
-    {
-        Task<OrganizationEntity> GetOrganization(string orgId);
-        Task<IEnumerable<OrganizationEntity>> GetOrganizations();
-    }
-
-    public class GlobalOrganizationRepository : IOrganizationRepository
-    {
-        private readonly TableServiceClient _tableClient;
-
-        private readonly TableClient _orgTable;
-
-        public GlobalOrganizationRepository(TableServiceClient tableClient)
-        {
-            _tableClient = tableClient;
-            _orgTable = _tableClient.GetTableClient("Organization");
-        }
-
-        // as the number of organizations is likely not to reach into the millions, we can stick with a common PartitionKey for now
-        public Task<OrganizationEntity> GetOrganization(string orgId)
-        {
-            var org = _orgTable.GetEntity<OrganizationEntity>(typeof(OrganizationEntity).GetType().Name, Guid.Parse(orgId).ToString());
-            return Task.FromResult(org.Value);
-        }
-
-        public Task<IEnumerable<OrganizationEntity>> GetOrganizations()
-        {
-            var org = _orgTable.Query<OrganizationEntity>(x => x.PartitionKey == typeof(OrganizationEntity).Name);
-            return Task.FromResult(org.AsEnumerable());
-        }
     }
 
     // every query here is filtered by the calling user's orgId

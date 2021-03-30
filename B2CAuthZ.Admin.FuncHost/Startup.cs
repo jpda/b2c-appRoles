@@ -10,6 +10,7 @@ using Microsoft.Graph;
 using Microsoft.IdentityModel.Logging;
 using B2CAuthZ.Admin.FuncHost;
 using AzureFunctions.OidcAuthentication;
+using B2CAuthZ.Admin;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
@@ -35,6 +36,11 @@ public class Startup : FunctionsStartup
             .Configure<IConfiguration>((options, configuration) =>
             {
                 configuration.GetSection("AzureAd").Bind(options);
+            });
+        builder.Services.AddOptions<OrganizationOptions>()
+            .Configure<IConfiguration>((options, configuration) =>
+            {
+                configuration.GetSection("OrganizationOptions").Bind(options);
             });
         builder.Services.AddSingleton<IAuthenticationProvider, MsalTokenProvider>();
         // todo: you gotta be kidding me

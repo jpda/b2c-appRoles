@@ -17,25 +17,25 @@ namespace B2CAuthZ.Admin.FuncHost
 
     public class UserFunctions
     {
-        private readonly IUserRepository _repoFactory;
-        private readonly IApiAuthentication apiAuthentication;
+        private readonly UserRepositoryFactory _repoFactory;
+        private readonly IApiAuthentication _apiAuthentication;
         private const string ORGID_EXTENSION = "extension_OrgId";
 
-        public UserFunctions(IUserRepository userRepo, IApiAuthentication apiAuthentication)
+        public UserFunctions(UserRepositoryFactory userRepoFactory, IApiAuthentication apiAuthentication)
         {
-            _userRepo = userRepo;
-            this.apiAuthentication = apiAuthentication;
+            _repoFactory = userRepoFactory;
+            _apiAuthentication = apiAuthentication;
         }
 
         private async Task<IActionResult> RunFilteredRequest<T>(IHeaderDictionary headers, System.Func<IUserRepository, Task<T>> work)
         {
-            var authResult = await this.apiAuthentication.AuthenticateAsync(headers);
+            var authResult = await _apiAuthentication.AuthenticateAsync(headers);
             if (authResult.Failed) return new UnauthorizedObjectResult(authResult.FailureReason);
 
             var orgId = authResult.User.Claims.SingleOrDefault(x => x.Type == ORGID_EXTENSION);
             if (orgId == null) return new UnauthorizedObjectResult(new { Message = "User is not a member of an organization" });
 
-            var repo = _repoFactory.CreateForOrgId(orgId.Value);
+            var repo = _repoFactory.CreateForOrgId(authResult.User);
             return new OkObjectResult(await work(repo));
         }
 
@@ -87,13 +87,13 @@ namespace B2CAuthZ.Admin.FuncHost
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "users/{userQuery}")] HttpRequest req, string userQuery)
         {
             // todo: figure out how to parse & deal with odata queries
-            var authResult = await this.apiAuthentication.AuthenticateAsync(req.Headers);
+            var authResult = await _apiAuthentication.AuthenticateAsync(req.Headers);
             if (authResult.Failed) return new ForbidResult(authenticationScheme: "Bearer");
 
             var orgId = authResult.User.Claims.SingleOrDefault(x => x.Type == ORGID_EXTENSION);
             if (orgId == null) return new UnauthorizedObjectResult(new { Message = "User is not a member of an organization" });
 
-            var repo = _repoFactory.CreateForOrgId(orgId.Value);
+            var repo = _repoFactory.CreateForOrgId(authResult.User);
             // catchall for phonenumber + username (not email)
             return new OkObjectResult(new { Method = "Catchall", userQuery });
         }

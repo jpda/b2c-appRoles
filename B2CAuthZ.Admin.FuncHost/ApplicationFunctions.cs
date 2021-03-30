@@ -8,6 +8,7 @@ using System.Linq;
 using AzureFunctions.OidcAuthentication;
 using System.Security.Claims;
 using System.Text.Json;
+using System;
 
 namespace B2CAuthZ.Admin.FuncHost
 {
@@ -15,25 +16,25 @@ namespace B2CAuthZ.Admin.FuncHost
     {
         //private readonly UserRepositoryFactory _repoFactory;
         private readonly ApplicationRepositoryFactory _appRepoFactory;
-        private readonly IApiAuthentication apiAuthentication;
+        private readonly IApiAuthentication _apiAuthentication;
         private const string ORGID_EXTENSION = "extension_OrgId";
 
         public ApplicationFunctions(ApplicationRepositoryFactory appRepoFactory, IApiAuthentication apiAuthentication)
         {
             //_repoFactory = userRepoFactory;
             _appRepoFactory = appRepoFactory;
-            this.apiAuthentication = apiAuthentication;
+            _apiAuthentication = apiAuthentication;
         }
 
         private async Task<IActionResult> RunFilteredRequest<T>(IHeaderDictionary headers, System.Func<IApplicationRepository, string, Task<T>> work)
         {
-            var authResult = await this.apiAuthentication.AuthenticateAsync(headers);
+            var authResult = await _apiAuthentication.AuthenticateAsync(headers);
             if (authResult.Failed) return new UnauthorizedObjectResult(authResult.FailureReason);
 
             var orgId = authResult.User.Claims.SingleOrDefault(x => x.Type == ORGID_EXTENSION);
             if (orgId == null) return new UnauthorizedObjectResult(new { Message = "User is not a member of an organization" });
 
-            var repo = _appRepoFactory.CreateForOrgId(orgId.Value);
+            var repo = _appRepoFactory.CreateForOrgId(authResult.User);
             var userId = authResult.User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
             return new OkObjectResult(await work(repo, userId));
         }
@@ -43,23 +44,23 @@ namespace B2CAuthZ.Admin.FuncHost
         public async Task<IActionResult> GetApplications(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "applications")] HttpRequest req)
         {
-            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetResources(user));
+            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetResources());
         }
 
         [FunctionName("GetApplication")]
         public async Task<IActionResult> GetApplication(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "servicePrincipals/{servicePrincipalId}")] HttpRequest req, string servicePrincipalId)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "servicePrincipals/{servicePrincipalId}")] HttpRequest req, Guid servicePrincipalId)
         {
-            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetResource(user, servicePrincipalId));
+            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetResource(servicePrincipalId));
         }
 
         // https://graph.microsoft.com/v1.0/applications/825d5509-8c13-4651-8528-51f1c6efb7d0/appRoles
         // note this isn't _really_ an application, it's a service principal. trying to reduce round trips
         [FunctionName("GetServicePrincipalRoles")]
         public async Task<IActionResult> GetServicePrincipalRoles(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "servicePrincipals/{servicePrincipalId}/appRoles")] HttpRequest req, string servicePrincipalId)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "servicePrincipals/{servicePrincipalId}/appRoles")] HttpRequest req, Guid servicePrincipalId)
         {
-            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetAppRolesByResource(user, servicePrincipalId));
+            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetAppRolesByResource(servicePrincipalId));
         }
 
         // $filter=appRoles/any(x:x/id eq '1f861d87-4256-4563-bec8-cda2e0b925a7')
@@ -75,9 +76,9 @@ namespace B2CAuthZ.Admin.FuncHost
         [FunctionName("GetApplicationRoleAssignments")]
         public async Task<IActionResult> GetApplicationRoleAssignments(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get",
-                Route = "servicePrincipals/{servicePrincipalId}/appRoleAssignedTo")] HttpRequest req, string servicePrincipalId)
+                Route = "servicePrincipals/{servicePrincipalId}/appRoleAssignedTo")] HttpRequest req, Guid servicePrincipalId)
         {
-            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetAppRoleAssignmentsByResource(user, servicePrincipalId));
+            return await RunFilteredRequest(req.Headers, (repo, user) => repo.GetAppRoleAssignmentsByResource(servicePrincipalId));
         }
 
         // resolve app id --> service principal id
@@ -86,11 +87,11 @@ namespace B2CAuthZ.Admin.FuncHost
         [FunctionName("AddApplicationRoleAssignment")]
         public async Task<IActionResult> AddApplicationRoleAssignment(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post",
-                Route = "servicePrincipals/{servicePrincipalId}/appRoleAssignedTo")] HttpRequest req, string servicePrincipalId)
+                Route = "servicePrincipals/{servicePrincipalId}/appRoleAssignedTo")] HttpRequest req, Guid servicePrincipalId)
         {
             var assignmentRequest = JsonSerializer.Deserialize<AppRoleAssignment>(await new System.IO.StreamReader(req.Body).ReadToEndAsync());
             return await RunFilteredRequest(req.Headers,
-                (repo, user) => repo.AssignAppRole(user, servicePrincipalId, servicePrincipalId, assignmentRequest.AppRoleId.ToString()));
+                (repo, user) => repo.AssignAppRole(servicePrincipalId, servicePrincipalId, assignmentRequest.AppRoleId.Value));
         }
     }
 }

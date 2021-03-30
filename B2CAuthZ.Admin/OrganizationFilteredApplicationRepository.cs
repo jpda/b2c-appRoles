@@ -8,6 +8,27 @@ using Microsoft.Extensions.Options;
 
 namespace B2CAuthZ.Admin
 {
+    [Obsolete("Inject the repositories directly, this is used by FuncHost only")]
+    public class ApplicationRepositoryFactory
+    {
+        private readonly GraphServiceClient _graphClient;
+        private readonly IOptions<OrganizationOptions> _orgOptions;
+        public ApplicationRepositoryFactory(GraphServiceClient client, IOptions<OrganizationOptions> options)
+        {
+            _graphClient = client;
+            _orgOptions = options;
+        }
+        public IApplicationRepository CreateForOrgId(System.Security.Claims.ClaimsPrincipal user)
+        {
+            return new OrganizationFilteredApplicationRepository(_graphClient, user, _orgOptions);
+        }
+
+        public IApplicationRepository Create()
+        {
+            return new GlobalApplicationRepository(_graphClient);
+        }
+    }
+
     // this repository is filtered based on the calling user
     // only shows apps the user is allowed to administer, based on membership in the _adminAppRoleId role
     // this returns resourceId, which is technically the service principal id, not the application id itself
@@ -27,6 +48,17 @@ namespace B2CAuthZ.Admin
             // working around a bit of graph type inconsistency
             _adminAppRoleId = Guid.Parse(_options.ApplicationOrgAdministratorRoleId);
         }
+
+        public OrganizationFilteredApplicationRepository(
+            GraphServiceClient client,
+            System.Security.Claims.ClaimsPrincipal user,
+            IOptions<OrganizationOptions> options
+        ) : base(client, user, options)
+        {
+            // working around a bit of graph type inconsistency
+            _adminAppRoleId = Guid.Parse(_options.ApplicationOrgAdministratorRoleId);
+        }
+
 
         private async Task<IEnumerable<AppRoleAssignment>> GetResourcesUserCanAdminister(bool refresh = false)
         {

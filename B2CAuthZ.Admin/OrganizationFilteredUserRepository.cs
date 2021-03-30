@@ -8,6 +8,22 @@ using Microsoft.Extensions.Options;
 
 namespace B2CAuthZ.Admin
 {
+    [Obsolete("Inject the repositories directly, this is used by FuncHost only")]
+    public class UserRepositoryFactory
+    {
+        private readonly GraphServiceClient _graphClient;
+        private readonly IOptions<OrganizationOptions> _orgOptions;
+        public UserRepositoryFactory(GraphServiceClient client, IOptions<OrganizationOptions> options)
+        {
+            _graphClient = client;
+            _orgOptions = options;
+        }
+        public IUserRepository CreateForOrgId(System.Security.Claims.ClaimsPrincipal user)
+        {
+            return new OrganizationFilteredUserRepository(_graphClient, user, _orgOptions);
+        }
+    }
+
     public class OrganizationFilteredUserRepository : FilteredRepository, IUserRepository
     {
         // todo: better way to get the user data in here without using the httpContext
@@ -16,6 +32,12 @@ namespace B2CAuthZ.Admin
             IHttpContextAccessor httpContext,
             IOptions<OrganizationOptions> options
         ) : base(client, httpContext.HttpContext.User, options) { }
+
+        public OrganizationFilteredUserRepository(
+            GraphServiceClient client,
+            System.Security.Claims.ClaimsPrincipal user,
+            IOptions<OrganizationOptions> options
+        ) : base(client, user, options) { }
 
         public async Task<User> GetUser(string userId)
         {
