@@ -10,7 +10,7 @@ using Microsoft.Graph;
 
 [assembly: FunctionsStartup(typeof(AzureAdB2CAppRoleShim.Startup))]
 
-namespace AzureAdB2CAppRoleShim
+namespace B2CAuthZ.Runtime.FuncHost
 {
     public class Startup : FunctionsStartup
     {

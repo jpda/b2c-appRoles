@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using System.Linq;
 using Microsoft.Graph;
 
-namespace AzureAdB2CAppRoleShim
+namespace B2CAuthZ.Runtime.FuncHost
 {
     public class UserAppRoleRequest
     {
