@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 using Microsoft.Graph;
 
-[assembly: FunctionsStartup(typeof(AzureAdB2CAppRoleShim.Startup))]
+[assembly: FunctionsStartup(typeof(B2CAuthZ.Runtime.FuncHost.Startup))]
 
 namespace B2CAuthZ.Runtime.FuncHost
 {
