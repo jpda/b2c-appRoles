@@ -22,10 +22,10 @@ jobs:
         dotnet-version: '3.1.301'
 
     - name: Build with dotnet
-      run: dotnet build --configuration Release .\B2CAuthZ.Admin.WebApiHost\B2CAuthZ.Admin.WebApiHost.csproj
+      run: dotnet build --configuration Release .\\B2CAuthZ.Admin.WebApiHost\\B2CAuthZ.Admin.WebApiHost.csproj
 
     - name: dotnet publish
-      run: dotnet publish -c Release .\B2CAuthZ.Admin.WebApiHost\B2CAuthZ.Admin.WebApiHost.csproj -o ${{env.DOTNET_ROOT}}/myapp
+      run: dotnet publish -c Release .\\B2CAuthZ.Admin.WebApiHost\\B2CAuthZ.Admin.WebApiHost.csproj -o ${{env.DOTNET_ROOT}}/myapp
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v2
