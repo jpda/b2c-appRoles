@@ -65,13 +65,5 @@ namespace B2CAuthZ.Admin.FuncHost
             var request = JsonSerializer.Deserialize<OrganizationMembership>(await new System.IO.StreamReader(req.Body).ReadToEndAsync());
             return await RunFilteredRequest(req.Headers, (repo, user) => repo.SetUserOrganization(request));
         }
-
-        // [FunctionName("RemoveUserOrganization")]
-        // public async Task<IActionResult> RemoveUserOrganization(
-        //     [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "organization/{organizationId}/members")] HttpRequest req, string organizationId, OrganizationMembership membershipRequest)
-        // {
-
-        // }
-
     }
 }

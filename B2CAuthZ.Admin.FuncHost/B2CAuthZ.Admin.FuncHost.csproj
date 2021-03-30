@@ -3,7 +3,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
     <RootNamespace>B2CAuthZ.Admin.FuncHost</RootNamespace>
-    <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
+    <!-- <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput> -->
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Data.Tables" Version="12.0.0-beta.6" />
