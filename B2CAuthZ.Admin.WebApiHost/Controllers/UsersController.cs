@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Graph;
 using Microsoft.Identity.Web.Resource;
+using B2CAuthZ.Admin;
 
 namespace B2CAuthZ.Admin.WebApiHost.Controllers
 {
@@ -24,23 +28,25 @@ namespace B2CAuthZ.Admin.WebApiHost.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUsers()
-        {
-            return new OkObjectResult(await _userRepo.GetUsers());
-        }
+        public async Task<IEnumerable<OrganizationUser>> GetUsers() => await _userRepo.GetOrganizationUsers();
+        // {
+        //     return new OkObjectResult(await _userRepo.GetUsers());
+        // }
 
         [HttpGet]
         [Route("{userId:guid}")]
-        public async Task<IActionResult> Get(Guid userId)
-        {
-            return new OkObjectResult(await _userRepo.GetUser(userId.ToString()));
-        }
+        public async Task<OrganizationUser> Get(Guid userId) => await _userRepo.GetOrganizationUser(userId.ToString());
+        // {
+        //     return new OkObjectResult(await _userRepo.GetUser(userId.ToString()));
+        // }
 
         [HttpGet]
         [Route("{userId:guid}/appRoleAssignments")]
-        public async Task<IActionResult> GetUserAppRoleAssignments(Guid userId)
-        {
-            return new OkObjectResult(await _userRepo.GetUserAppRoleAssignments(userId.ToString()));
-        }
+        public async Task<IEnumerable<AppRoleAssignment>> GetUserAppRoleAssignments(Guid userId) => await _userRepo.GetUserAppRoleAssignments(userId.ToString());
+        // {
+        //     return new OkObjectResult(await _userRepo.GetUserAppRoleAssignments(userId.ToString()));
+        // }
     }
+
+
 }

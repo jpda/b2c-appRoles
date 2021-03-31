@@ -73,6 +73,7 @@ namespace B2CAuthZ.Admin.WebApiHost
                 {
                     c.SwaggerEndpoint("/swagger/v1.0/swagger.json", "B2C Authorization Administration v1.0");
                     c.RoutePrefix = string.Empty;
+                    c.DefaultModelExpandDepth(1);
                 });
             }
 

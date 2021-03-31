@@ -122,7 +122,7 @@ namespace B2CAuthZ.Admin
             return new List<AppRoleAssignment>();
         }
 
-        public async Task<User> SetUserOrganization(OrganizationMembership membership)
+        public async Task<OrganizationUser> SetUserOrganization(OrganizationMembership membership)
         {
             if (membership.OrgId != _orgId) return null; // get out, user is trying to add a user to a different org than their own
 
@@ -138,7 +138,7 @@ namespace B2CAuthZ.Admin
                 user.AdditionalData[_options.OrgIdExtensionName] = membership.OrgId;
                 user.AdditionalData[_options.OrgRoleExtensionName] = membership.Role;
                 await userRequest.UpdateAsync(user);
-                return user;
+                return new OrganizationUser(user, _options.OrgIdExtensionName, _options.OrgRoleExtensionName);
             }
 
             if (user.AdditionalData.ContainsKey(_options.OrgIdExtensionName))
@@ -149,10 +149,28 @@ namespace B2CAuthZ.Admin
                     // already in org, set role
                     user.AdditionalData[_options.OrgRoleExtensionName] = membership.Role;
                     await userRequest.UpdateAsync(user);
-                    return user;
+                    return new OrganizationUser(user, _options.OrgIdExtensionName, _options.OrgRoleExtensionName);
                 }
             }
-            return user;
+            return new OrganizationUser(user, _options.OrgIdExtensionName, _options.OrgRoleExtensionName);
+        }
+
+        public async Task<OrganizationUser> GetOrganizationUser(string userId)
+        {
+            var user = await GetUser(userId);
+            return new OrganizationUser(user, _options.OrgIdExtensionName, _options.OrgRoleExtensionName);
+        }
+
+        public async Task<IEnumerable<OrganizationUser>> GetOrganizationUsers()
+        {
+            var users = await GetUsers();
+            return users.Select(x => new OrganizationUser(x, _options.OrgIdExtensionName, _options.OrgRoleExtensionName));
+        }
+
+        public async Task<OrganizationUser> FindOrganizationUserBySignInName(string name)
+        {
+            var user = await FindUserBySignInName(name);
+            return new OrganizationUser(user, _options.OrgIdExtensionName, _options.OrgRoleExtensionName);
         }
     }
 }

@@ -1,11 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Graph;
 using Microsoft.Identity.Web.Resource;
+
+using B2CAuthZ.Admin;
 
 namespace B2CAuthZ.Admin.WebApiHost.Controllers
 {
@@ -27,41 +32,41 @@ namespace B2CAuthZ.Admin.WebApiHost.Controllers
 
         [HttpGet]
         [Route("applications")]
-        public async Task<IActionResult> GetApplications()
-        {
-            return new OkObjectResult(await _appsRepo.GetResources());
-        }
+        public async Task<IEnumerable<UserApplication>> GetApplications() => await _appsRepo.GetResources();
+        // {
+        //     return new OkObjectResult(await _appsRepo.GetResources());
+        // }
 
         [HttpGet]
         [Route("servicePrincipals/{resourceId:guid}")]
-        public async Task<IActionResult> Get(Guid resourceId)
-        {
-            return new OkObjectResult(await _appsRepo.GetResource(resourceId));
-        }
+        public async Task<UserApplication> GetApplication(Guid resourceId) => await _appsRepo.GetResource(resourceId);
+        // {
+        //     return new OkObjectResult(await _appsRepo.GetResource(resourceId));
+        // }
 
         [HttpGet]
         [Route("servicePrincipals/{resourceId:guid}/appRoles")]
-        public async Task<IActionResult> GetServicePrincipalRoles(Guid resourceId)
-        {
-            var userId = HttpContext.User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
-            return new OkObjectResult(await _appsRepo.GetAppRolesByResource(resourceId));
-        }
+        public async Task<IEnumerable<AppRole>> GetServicePrincipalRoles(Guid resourceId) => await _appsRepo.GetAppRolesByResource(resourceId);
+        // {
+        //     var userId = HttpContext.User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
+        //     return new OkObjectResult(await _appsRepo.GetAppRolesByResource(resourceId));
+        // }
 
         [HttpGet]
         [Route("servicePrincipals/{servicePrincipalId}/appRoleAssignedTo")]
-        public async Task<IActionResult> GetApplicationAppRoleAssignments(Guid resourceId)
-        {
-            var userId = HttpContext.User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
-            return new OkObjectResult(await _appsRepo.GetAppRoleAssignmentsByResource(resourceId));
-        }
+        public async Task<IEnumerable<AppRoleAssignment>> GetApplicationAppRoleAssignments(Guid resourceId) => await _appsRepo.GetAppRoleAssignmentsByResource(resourceId);
+        // {
+        //   var userId = HttpContext.User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
+        //   return new OkObjectResult(await _appsRepo.GetAppRoleAssignmentsByResource(resourceId));
+        // }
 
         [HttpPost]
         [Route("servicePrincipals/{servicePrincipalId}/appRoleAssignedTo")]
-        public async Task<IActionResult> AddApplicationRoleAssignment(Guid resourceId, [FromBody] Microsoft.Graph.AppRoleAssignment request)
+        public async Task<AppRoleAssignment> AddApplicationRoleAssignment(Guid resourceId, [FromBody] Microsoft.Graph.AppRoleAssignment request)
         {
             var userId = HttpContext.User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
             request.ResourceId = resourceId;
-            return new OkObjectResult(await _appsRepo.AssignAppRole(request));
+            return await _appsRepo.AssignAppRole(request);
         }
     }
 }

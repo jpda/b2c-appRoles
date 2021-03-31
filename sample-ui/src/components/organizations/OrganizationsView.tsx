@@ -5,6 +5,7 @@ import AuthService from "../auth/AuthService";
 //import { AuthResponse, AuthenticationParameters } from "msal";
 import { IKvp, Kvp } from "../../models/KvpModel";
 import { Card, CardDeck } from "react-bootstrap";
+import * as api from "../../api/api";
 
 interface Props {
     auth: AuthService
@@ -36,86 +37,30 @@ export class OrganizationsView extends React.Component<Props, State> {
 
     componentDidMount() {
 
-        if (this.auth.msalObj.getActiveAccount()) { // account is available, so we're signed in
-            this.auth.msalObj.acquireTokenSilent(this.scopeConfiguration)
-                .then(t => this.fetchData(t))
-                .catch(e => this.tokenError(e));
-        } else {
-            this.auth.msalObj.acquireTokenPopup(this.scopeConfiguration)
-                .then(t => this.fetchData(t))
-                .catch(e => this.tokenError(e));
-        }
     }
 
-    tokenError(e: any) {
-        console.error(e);
-        console.error(e.errorCode);
-        if (e.errorCode === "user_login_error") { // e.g., the user hasn't logged in yet, so we need to log them in
-            this.auth.msalObj.loginPopup(this.scopeConfiguration)
-                .then(response => { // don't really need the response here, but if you wanted an id_token for some reason it would be available
-                    this.props.authenticationStateChanged(); // notify our upstream components that we've authenticated to update other UI
-                    this.auth.msalObj.acquireTokenSilent(this.scopeConfiguration)
-                        .then(t => this.fetchData(t))
-                        .catch(e => this.tokenError(e));
-                })
-                .catch(e => this.handleFatalError(e)); // some other error that we can't handle
-        }
-        if (this.auth.requiresInteraction(e.errorCode)) { // this usually means the user needs to consent or use MFA - things that require an interactive login
-            this.auth.msalObj.acquireTokenPopup(this.scopeConfiguration)
-                .then(t => this.fetchData(t))
-                .catch(e => this.handleFatalError(e));
-        }
-    }
+    fetchData() {
 
-    handleFatalError(e: any) {
-        console.error(e.errorCode);
-        this.props.toastToggle(true, e.errorCode);
-        this.setState({ userInfo: [new Kvp("Something went wrong", e.errorCode)] });
-    }
-
-    fetchData(token: AuthenticationResponse) {
-        if (!token) {
-            this.handleFatalError({ errorCode: "no_token" });
-            return;
-        };
-
-        if (token.tokenType !== "access_token" || token.accessToken === null) {
-            this.handleFatalError({ errorCode: "wrong_token_type" });
-        }
-
-        console.debug("calendarview: got access token: " + token.accessToken.substr(0, 10) + "...");
-
-        var url = "https://graph.microsoft.com/v1.0/me/calendarview?startdatetime=" + this.state.startDate + "&enddatetime=" + this.state.endDate;
-        console.info(url);
-        fetch(url,
-            {
-                headers: new Headers({
-                    "Authorization": "Bearer " + token.accessToken
-                })
-            }
-        )
-            .then(x => x.json())
-            .then(x => {
-                this.parseGraphResponse(x);
-            });
     }
 
     parseGraphResponse(data: any) {
-        if (data === null) {
-            this.handleFatalError({ errorCode: "no_graph_response" });
-        };
-        var calData = [];
-        for (var i = 0; i < data.value.length; i++) {
-            calData.push(new Kvp(data.value[i].subject, data.value[i].start.dateTime));
-        }
+        
+        appsApi.vvApplicationsGet();
+        //     if (data === null) {
+        //         this.handleFatalError({ errorCode: "no_graph_response" });
+        //     };
+        //     var calData = [];
+        //     for (var i = 0; i < data.value.length; i++) {
+        //         calData.push(new Kvp(data.value[i].subject, data.value[i].start.dateTime));
+        //     }
 
-        this.setState({ userInfo: calData });
-    }
+        //     this.setState({ userInfo: calData });
+        // }
 
-    addDays(date: Date, days: number): Date {
-        var result = new Date(date);
-        result.setDate(result.getDate() + days);
-        return result;
+        // addDays(date: Date, days: number): Date {
+        //     var result = new Date(date);
+        //     result.setDate(result.getDate() + days);
+        //     return result;
     }
 
     render() {
