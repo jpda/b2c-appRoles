@@ -94,7 +94,7 @@ namespace B2CAuthZ.Admin
                 .Request(new List<QueryOption>() { filter })
                 .Select(_options.UserFieldSelection)
                 .GetAsync();
-            return users;
+            return users.AsEnumerable();
         }
 
         public async Task<IEnumerable<AppRoleAssignment>> GetUserAppRoleAssignments(User u)
@@ -163,7 +163,7 @@ namespace B2CAuthZ.Admin
 
         public async Task<IEnumerable<OrganizationUser>> GetOrganizationUsers()
         {
-            var users = await GetUsers();
+            var users = await this.GetUsers();
             return users.Select(x => new OrganizationUser(x, _options.OrgIdExtensionName, _options.OrgRoleExtensionName));
         }
 
