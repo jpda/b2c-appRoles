@@ -28,43 +28,30 @@ namespace B2CAuthZ.Admin.WebApiHost.Controllers
         {
             _logger = logger;
             _appsRepo = appsRepo;
+            System.Security.Principal.IPrincipal c = HttpContext.User;
+            c.Identity.
         }
 
         [HttpGet]
         [Route("applications")]
         public async Task<IEnumerable<UserApplication>> GetApplications() => await _appsRepo.GetResources();
-        // {
-        //     return new OkObjectResult(await _appsRepo.GetResources());
-        // }
 
         [HttpGet]
         [Route("servicePrincipals/{resourceId:guid}")]
         public async Task<UserApplication> GetApplication(Guid resourceId) => await _appsRepo.GetResource(resourceId);
-        // {
-        //     return new OkObjectResult(await _appsRepo.GetResource(resourceId));
-        // }
 
         [HttpGet]
         [Route("servicePrincipals/{resourceId:guid}/appRoles")]
         public async Task<IEnumerable<AppRole>> GetServicePrincipalRoles(Guid resourceId) => await _appsRepo.GetAppRolesByResource(resourceId);
-        // {
-        //     var userId = HttpContext.User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
-        //     return new OkObjectResult(await _appsRepo.GetAppRolesByResource(resourceId));
-        // }
 
         [HttpGet]
         [Route("servicePrincipals/{servicePrincipalId}/appRoleAssignedTo")]
         public async Task<IEnumerable<AppRoleAssignment>> GetApplicationAppRoleAssignments(Guid resourceId) => await _appsRepo.GetAppRoleAssignmentsByResource(resourceId);
-        // {
-        //   var userId = HttpContext.User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
-        //   return new OkObjectResult(await _appsRepo.GetAppRoleAssignmentsByResource(resourceId));
-        // }
 
         [HttpPost]
         [Route("servicePrincipals/{servicePrincipalId}/appRoleAssignedTo")]
         public async Task<AppRoleAssignment> AddApplicationRoleAssignment(Guid resourceId, [FromBody] Microsoft.Graph.AppRoleAssignment request)
         {
-            var userId = HttpContext.User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
             request.ResourceId = resourceId;
             return await _appsRepo.AssignAppRole(request);
         }
