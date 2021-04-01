@@ -28,8 +28,6 @@ namespace B2CAuthZ.Admin.WebApiHost.Controllers
         {
             _logger = logger;
             _appsRepo = appsRepo;
-            System.Security.Principal.IPrincipal c = HttpContext.User;
-            c.Identity.
         }
 
         [HttpGet]
