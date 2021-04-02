@@ -21,7 +21,7 @@ namespace B2CAuthZ.Admin
             }
             if (u.AdditionalData.ContainsKey(orgRoleExtension))
             {
-                this.OrgId = u.AdditionalData[orgRoleExtension].ToString();
+                this.OrgRole = u.AdditionalData[orgRoleExtension].ToString();
             }
         }
 
