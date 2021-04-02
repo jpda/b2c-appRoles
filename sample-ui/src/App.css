@@ -1,0 +1,33 @@
+@media (min-width: 2000px) {
+  .container {
+      max-width: 1980px;
+  }
+}
+
+@media (min-width: 1600px) and (max-width:1999px) {
+  .container {
+      max-width: 1580px;
+  }
+}
+
+@media (min-width: 1300px) and (max-width: 1599px) {
+  .container {
+      max-width: 1280px;
+  }
+}
+
+table {
+  table-layout: fixed;
+}
+
+table tr td {
+  word-wrap: break-word;
+}
+
+.navbar {
+  margin-bottom: 20px;
+}
+
+.row {
+  margin-bottom: 10px;
+}

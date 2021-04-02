@@ -9,7 +9,7 @@
         },
         "logLevel": {
             "default": "Error",
-            "AzureAdB2CAppRoleShim": "Information",
+            "B2CAuthZ.Runtime.FuncHost": "Information",
             "Host": "Error"
         }
     },
