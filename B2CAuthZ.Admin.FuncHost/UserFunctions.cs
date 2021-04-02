@@ -52,15 +52,6 @@ namespace B2CAuthZ.Admin.FuncHost
             [HttpTrigger(AuthorizationLevel.Anonymous, "get",
             Route = @"users/{userId:regex([({{]?[a-fA-F0-9]{{8}}[-]?([a-fA-F0-9]{{4}}[-]?){{3}}[a-fA-F0-9]{{12}}[}})]?)}")] HttpRequest req, string userId)
         {
-            // var authResult = await this.apiAuthentication.AuthenticateAsync(req.Headers);
-            // if (authResult.Failed) return new ForbidResult(authenticationScheme: "Bearer");
-
-            // var orgId = authResult.User.Claims.SingleOrDefault(x => x.Type == ORGID_EXTENSION);
-            // if (orgId == null) return new UnauthorizedObjectResult(new { Message = "User is not a member of an organization" });
-
-            // var repo = _repoFactory.CreateForOrgId(orgId.Value);
-            //return new OkObjectResult(await repo.GetUser(userId));
-
             return await RunFilteredRequest(req.Headers, x => x.GetUser(userId));
         }
 
@@ -69,13 +60,6 @@ namespace B2CAuthZ.Admin.FuncHost
         public async Task<IActionResult> GetUserByEmail(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "users/{userEmail:regex((@)(.+)$)}")] HttpRequest req, string userEmail)
         {
-            // var authResult = await this.apiAuthentication.AuthenticateAsync(req.Headers);
-            // if (authResult.Failed) return new ForbidResult(authenticationScheme: "Bearer");
-
-            // var orgId = authResult.User.Claims.SingleOrDefault(x => x.Type == ORGID_EXTENSION);
-            // if (orgId == null) return new UnauthorizedObjectResult(new { Message = "User is not a member of an organization" });
-
-            // var repo = _repoFactory.CreateForOrgId(orgId.Value);
             return new OkObjectResult(new { Method = "Email", userEmail });
             //return await RunFilteredRequest(req.Headers, x => x.GetUserBy(userEmail));
         }
@@ -103,13 +87,6 @@ namespace B2CAuthZ.Admin.FuncHost
         public async Task<IActionResult> GetUserAppRoleAssignmentsByApplication(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "users/{userQuery}/appRoleAssignments")] HttpRequest req, string userQuery)
         {
-            // var authResult = await this.apiAuthentication.AuthenticateAsync(req.Headers);
-            // if (authResult.Failed) return new ForbidResult(authenticationScheme: "Bearer");
-
-            // var orgId = authResult.User.Claims.SingleOrDefault(x => x.Type == ORGID_EXTENSION);
-            // if (orgId == null) return new UnauthorizedObjectResult(new { Message = "User is not a member of an organization" });
-
-            // var repo = _repoFactory.CreateForOrgId(orgId.Value);
             return await RunFilteredRequest(req.Headers, x => x.GetUserAppRoleAssignments(userQuery));
         }
     }
