@@ -2,7 +2,7 @@ import React from "react";
 import Card from "react-bootstrap/Card";
 import { LinkContainer } from 'react-router-bootstrap';
 import Row from "react-bootstrap/Row";
-import { Button, Collapse, CardGroup } from "react-bootstrap";
+import {  Button, Collapse, CardGroup } from "react-bootstrap";
 
 interface State {
     open: boolean;

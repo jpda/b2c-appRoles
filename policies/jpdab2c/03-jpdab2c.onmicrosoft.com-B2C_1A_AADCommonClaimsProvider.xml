@@ -73,18 +73,18 @@
         <TechnicalProfile Id="Common-AAD">
           <DisplayName>Work or school account</DisplayName>
           <Protocol Name="OpenIdConnect" />
-          <Metadata>
-            <!-- todo: add your AAD multitenant app id here, see https://docs.microsoft.com/en-us/azure/active-directory-b2c/identity-provider-azure-ad-multi-tenant-custom?tabs=applications -->
-            <Item Key="client_id">cc6d9ef5-f275-4b13-8d4e-15b8303c2415</Item>
-            <Item Key="UsePolicyInRedirectUri">0</Item>
-            <Item Key="METADATA">https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration</Item>
-            <Item Key="response_types">code</Item>
-            <Item Key="scope">openid profile offline_access</Item>
-            <Item Key="response_mode">form_post</Item>
-            <Item Key="HttpBinding">POST</Item>
-            <Item Key="DiscoverMetadataByTokenIssuer">true</Item>
-            <Item Key="ValidTokenIssuerPrefixes">https://sts.windows.net/,https://login.microsoftonline.com/</Item>
-          </Metadata>
+<Metadata>
+  <!-- todo: add your AAD multitenant app id here, see https://docs.microsoft.com/en-us/azure/active-directory-b2c/identity-provider-azure-ad-multi-tenant-custom?tabs=applications -->
+  <Item Key="client_id">cc6d9ef5-f275-4b13-8d4e-15b8303c2415</Item>
+  <Item Key="UsePolicyInRedirectUri">0</Item>
+  <Item Key="METADATA">https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration</Item>
+  <Item Key="response_types">code</Item>
+  <Item Key="scope">openid profile offline_access</Item>
+  <Item Key="response_mode">form_post</Item>
+  <Item Key="HttpBinding">POST</Item>
+  <Item Key="DiscoverMetadataByTokenIssuer">true</Item>
+  <Item Key="ValidTokenIssuerPrefixes">https://sts.windows.net/,https://login.microsoftonline.com/</Item>
+</Metadata>
           <CryptographicKeys>
             <Key Id="client_secret" StorageReferenceId="B2C_1A_AADAppSecret" />
           </CryptographicKeys>

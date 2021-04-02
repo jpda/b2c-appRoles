@@ -43,11 +43,11 @@ namespace B2CAuthZ.Admin.WebApiHost.Controllers
         public async Task<IEnumerable<AppRole>> GetServicePrincipalRoles(Guid resourceId) => await _appsRepo.GetAppRolesByResource(resourceId);
 
         [HttpGet]
-        [Route("servicePrincipals/{servicePrincipalId}/appRoleAssignedTo")]
+        [Route("servicePrincipals/{resourceId:guid}/appRoleAssignedTo")]
         public async Task<IEnumerable<AppRoleAssignment>> GetApplicationAppRoleAssignments(Guid resourceId) => await _appsRepo.GetAppRoleAssignmentsByResource(resourceId);
 
         [HttpPost]
-        [Route("servicePrincipals/{servicePrincipalId}/appRoleAssignedTo")]
+        [Route("servicePrincipals/{resourceId:guid}/appRoleAssignedTo")]
         public async Task<AppRoleAssignment> AddApplicationRoleAssignment(Guid resourceId, [FromBody] Microsoft.Graph.AppRoleAssignment request)
         {
             request.ResourceId = resourceId;

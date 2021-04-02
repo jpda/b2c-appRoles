@@ -2,11 +2,10 @@ import React from "react";
 import { IClaim, Claim } from "../../models/ClaimModel";
 import Table from "react-bootstrap/Table";
 import Row from "react-bootstrap/Row";
-import AuthService from "../auth/AuthService";
+import MsalHandler from "../auth/MsalHandler";
 
 interface Props {
-    auth: AuthService;
-    toastToggle: any;
+    auth: MsalHandler;
 }
 
 interface State {
@@ -14,7 +13,7 @@ interface State {
 }
 
 export default class ClaimsView extends React.Component<Props, State> {
-    auth: AuthService;
+    auth: MsalHandler;
     data: Props;
 
     constructor(props: Props) {
@@ -24,38 +23,28 @@ export default class ClaimsView extends React.Component<Props, State> {
         this.state = { claims: [] };
     }
 
-    parseToken(token: any) {
+    parseClaims(token: any) {
+        console.log(token);
         var claimData = Object.keys(token).filter(y => y !== "decodedIdToken" && y !== "rawIdToken").map(x => {
             return new Claim(x, Array.isArray(token[x]) ? token[x].join(",") : token[x].toString());
         });
         this.setState({ claims: claimData });
     }
 
-    componentDidMount() {
-        this.handleData();
-    }
-
-    //todo: add toggle between id_token and access_tokens
-    handleData() {
-        if (this.auth.msalObj.getActiveAccount()) {
-            this.parseToken(this.auth.msalObj.getActiveAccount()?.idTokenClaims);
+    async componentDidMount() {
+        var account = this.auth.msalObj.getActiveAccount();
+        if (account) {
+            this.parseClaims(account.idTokenClaims);
         } else {
-            this.auth.msalObj.loginPopup(this.auth.data.requestConfig).then(token => this.parseToken(token.idToken)).catch(e => { this.tokenError(e) });
+            try {
+                var login = await this.auth.login();
+                this.parseClaims(login?.idTokenClaims);
+            } catch (error) {
+                console.error(error);
+                console.error(error.errorCode);
+                await this.auth.login();
+            }
         }
-    }
-
-    tokenError(e: any) {
-        console.error(e);
-        console.error(e.errorCode);
-        if (e.errorCode === "user_login_error") {
-            this.auth.msalObj.loginPopup(this.auth.config).then(token => { this.parseToken(token.idToken) }).catch(e => { this.showError(e); });
-        } else {
-            this.showError(e);
-        }
-    }
-
-    showError(e: any) {
-        this.props.toastToggle(true, e.errorCode);
     }
 
     render() {

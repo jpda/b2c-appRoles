@@ -5,6 +5,4 @@
  * It should not be modified by hand.
  */
 
-export * from './APIClient';
-export * from './rest/';
-export * from './interfaces/';
+export * from './AppRoleAssignmentsService';

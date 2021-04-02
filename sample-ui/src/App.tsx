@@ -1,17 +1,16 @@
 import "./App.css";
+import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { Component } from "react";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route, RouteComponentProps } from "react-router-dom";
 import Container from "react-bootstrap/Container";
 import MainMenuNav from "./components/mainMenu/MainMenuNav";
 import ClaimsView from "./components/claims/ClaimsView";
-import Home from "./components/home/Home";
 
-import AuthService from "./components/auth/AuthService";
-import { OrganizationsView } from "./components/organizations/OrganizationsView";
-import { GraphView } from "./components/organizations/GraphView";
-import { PowerView } from "./components/power/PowerView";
-import { Toast } from "react-bootstrap";
-import { MsalHandler } from "./components/auth/AuthService";
+import { UsersView } from "./components/users/UsersView";
+import MsalHandler from "./components/auth/MsalHandler";
+import { APIClient } from "./api/APIClient";
+import { AppsView } from "./components/apps/AppsView";
+import { AppAssignmentsView } from "./components/apps/AppAssignmentsView";
 
 interface State {
   userName: string;
@@ -20,17 +19,14 @@ interface State {
 }
 
 class App extends Component<any, State> {
-  endpoint: string;
-  msalHandler: MsalHandler;
-  auth: AuthService;
+  msalHandler: MsalHandler = MsalHandler.getInstance();
+  endpoint: string = "https://localhost:5001/";
   toastHandler: (s: boolean, m: string) => void;
   authenticationStateChanged: () => void;
+  apiClient: APIClient = new APIClient(this.endpoint);
 
   constructor(p: any, s: State) {
     super(p, s);
-
-    this.endpoint = "https://msaljs.jpda.app/api";
-    this.auth = this.msalHandler.getInstance();
     this.state = { userName: "", toastShow: false, toastMessage: "" };
 
     this.toastHandler = (s: boolean, m: string) => {
@@ -41,42 +37,39 @@ class App extends Component<any, State> {
     };
 
     this.authenticationStateChanged = () => {
-      if (this.auth.msalObj.getActiveAccount() !== null) {
-        var account = this.auth.msalObj.getActiveAccount();
+      console.log("authstate changed");
+      if (this.msalHandler.msalObj.getActiveAccount() !== null) {
+        var account = this.msalHandler.msalObj.getActiveAccount();
         this.setState({ userName: account === null ? "" : account.username });
       }
     };
+    this.msalHandler.setCallback(this.authenticationStateChanged);
   }
 
   render() {
     return (
       <Router>
         <div>
-          <MainMenuNav AuthService={this.auth} userName={this.state.userName} key={this.state.userName} authenticationStateChanged={this.authenticationStateChanged} />
+          <MainMenuNav auth={this.msalHandler} userName={this.state.userName} key={this.state.userName} />
           <Container>
-            <Route path="/" component={Home} />
+            {/* <Route path="/" component={Home} /> */}
             <Switch>
-              <Route path="/organizations" render={(props) => <OrganizationsView {...props} auth={this.auth} toastToggle={this.toastHandler} authenticationStateChanged={this.authenticationStateChanged} />} />
-              <Route path="/users" render={(props) => <CalendarView {...props} auth={this.auth} toastToggle={this.toastHandler} authenticationStateChanged={this.authenticationStateChanged} />} />
-              <Route path="/apps" render={(props) => <PowerView {...props} endpoint={this.endpoint} auth={this.auth} toastToggle={this.toastHandler} authenticationStateChanged={this.authenticationStateChanged} />} />
-              <Route path="/apps/roles" render={(props) => <ClaimsView {...props} auth={this.auth} toastToggle={this.toastHandler} />} />
-              <Route path="/apps/roles/assign" render={(props) => <ClaimsView {...props} auth={this.auth} toastToggle={this.toastHandler} />} />
-              <Route path="/claims" render={(props) => <ClaimsView {...props} auth={this.auth} toastToggle={this.toastHandler} />} />
+              <Route path="/users"><UsersView apiClient={this.apiClient} /></Route>
+              <Route path="/apps" exact><AppsView apiClient={this.apiClient} /></Route>
+              <Route path="/apps/:resourceId/assignments" render={({ match }: MatchProps) => (<AppAssignmentsView apiClient={this.apiClient} resourceId={match.params.resourceId} />)} />
+              <Route path="/claims" component={ClaimsView} />
             </Switch>
           </Container>
-          <div style={{ position: 'absolute', top: 45, right: 15, minWidth: '24rem', zIndex: -1 }}>
-            <Toast show={this.state.toastShow} onClose={() => { this.toastHandler(false, "") }}>
-              <Toast.Header>
-                <img src="//via.placeholder.com/20" className="rounded mr-2" alt="" />
-                <strong className="mr-auto">Authentication error</strong>
-                <small>Now</small>
-              </Toast.Header>
-              <Toast.Body>{this.state.toastMessage}</Toast.Body>
-            </Toast>
-          </div>
         </div>
       </Router >
     );
   }
+}
+
+interface MatchParams {
+  resourceId: string;
+}
+
+interface MatchProps extends RouteComponentProps<MatchParams> {
 }
 export default App;

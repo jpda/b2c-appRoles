@@ -60,6 +60,17 @@ namespace B2CAuthZ.Admin.WebApiHost
             {
                 c.SwaggerDoc("v1.0", new OpenApiInfo { Title = "B2C Authorization Administration", Version = "v1.0" });
             });
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: "DevCorsPolicy",
+                    builder =>
+                    {
+                        builder.AllowAnyHeader();
+                        builder.AllowAnyMethod();
+                        builder.AllowAnyOrigin();
+                    });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -75,11 +86,13 @@ namespace B2CAuthZ.Admin.WebApiHost
                     c.RoutePrefix = string.Empty;
                     c.DefaultModelExpandDepth(1);
                 });
+                app.UseCors("DevCorsPolicy");
             }
 
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
 
             app.UseAuthentication();
             app.UseAuthorization();

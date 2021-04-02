@@ -76,7 +76,7 @@ namespace B2CAuthZ.Admin
                 .GetAsync();
 
             // filter to those they can administer
-            var apps = assignments.Where(y => y.AppRoleId == _adminAppRoleId);
+            var apps = assignments.Where(y => y.AppRoleId == _adminAppRoleId).ToList();
             _userAdminAppRoleCache = apps;
             return apps;
         }

@@ -13,27 +13,30 @@ export class UserInfo {
 export default class MsalHandler {
     msalObj: msal.PublicClientApplication;
     config: IMsalHandlerConfiguration;
+    stateChanged: any;
 
     // for handling a single instance of the handler, use getInstance() elsewhere
     static instance: MsalHandler;
     private static createInstance() {
+        console.log("createInstance");
         var a = new MsalHandler();
         return a;
     }
 
-    public static getInstance() {
+    public static getInstance(stateChanged?: any) {
         if (!this.instance) {
             this.instance = this.createInstance();
         }
         return this.instance;
     }
 
-    // public static getInstanceWithExternalConfiguration(config: IMsalHandlerConfiguration) {
-
-    // }
+    public setCallback(stateChanged?: any) {
+        this.stateChanged = stateChanged;
+    }
 
     // we want this private to prevent any external callers from directly instantiating, instead rely on getInstance()
-    private constructor() {
+    private constructor(stateChanged?: any) {
+        this.stateChanged = stateChanged;
         this.config = new DefaultMsalHandlerConfiguration();
         this.track("ctor: starting");
         const a = new msal.PublicClientApplication(this.config.config);
@@ -49,7 +52,7 @@ export default class MsalHandler {
         this.msalObj = a;
     }
 
-    public async login(redirect?: boolean, state?: string, scopes?: string[]) {
+    public async login(redirect?: boolean, state?: string, scopes?: string[]): Promise<msal.AuthenticationResult | undefined> {
         this.track("entering login; scopes: " + scopes + ", state: " + state + ", redirect: " + redirect);
         if (state) {
             this.track("Setting state to: " + state);
@@ -58,16 +61,19 @@ export default class MsalHandler {
         if (redirect || this.config.redirect) {
             this.track("redirecting to login with parameters: " + JSON.stringify(this.config.requestConfiguration));
             this.msalObj.loginRedirect(this.config.requestConfiguration);
+            return undefined; // this will never happen, since the redirect leaves the site
         } else {
             try {
                 this.track("logging in with popup, config: " + JSON.stringify(this.config.requestConfiguration));
                 var response = await this.msalObj.loginPopup(this.config.requestConfiguration);
                 this.track("MsalHandler::login: got something: " + JSON.stringify(response));
                 this.processLogin(response);
+                return response;
             } catch (e) {
                 console.error(e);
             }
         }
+        return undefined;
     }
 
     public async acquireAccessToken(state?: string, redirect?: boolean, scopes?: string[]): Promise<String | null> {
@@ -78,8 +84,16 @@ export default class MsalHandler {
         }
         try {
             this.track("access token silent: " + JSON.stringify(this.config.requestConfiguration));
-            var token = await this.msalObj.acquireTokenSilent({ scopes: requestScopes });
-            return token.accessToken;
+            this.track(`accounts in cache: ${this.msalObj.getAllAccounts().length}`);
+            if (this.msalObj.getAllAccounts().length === 1) {
+                this.msalObj.setActiveAccount(this.msalObj.getAllAccounts()[0]);
+                var token = await this.msalObj.acquireTokenSilent({ scopes: requestScopes });
+                this.stateChanged();
+                return token.accessToken;
+            } else {
+                this.track(`logging in: ${requestScopes}`);
+                this.login(redirect, state, requestScopes);
+            }
         } catch (e) {
             if (e instanceof msal.AuthError) {
                 console.error("acquireAccessToken: error: " + JSON.stringify(e));
@@ -107,6 +121,7 @@ export default class MsalHandler {
     public processLogin(response: msal.AuthenticationResult | undefined) {
         this.track("processLogin");
         if (!response) return;
+        this.stateChanged() ?? this.stateChanged();
         this.track("id_token received: " + response.idToken);
         this.track("access_token received: " + response.accessToken);
         this.track("state received: " + response.state);
@@ -124,6 +139,16 @@ export default class MsalHandler {
         }
     }
 
+    public logout() {
+        var currentAccount = this.msalObj.getActiveAccount();
+        this.msalObj.logoutPopup({
+            account: currentAccount,
+            // postLogoutRedirectUri: "https://contoso.com/loggedOut",
+            // redirectMainWindowTo: "https://contoso.com/homePage"
+        });
+        this.stateChanged() ?? this.stateChanged();
+    }
+
     private track(message: string) {
         // lol: this is ridiculous - make sure you turn this off with this.useStackLogging = false
         var msg = "MsalHandler::" + message;
@@ -132,7 +157,7 @@ export default class MsalHandler {
             var stack = e.stack?.split("\n")[2].trim();
             var start = stack?.indexOf("(");
             var prefix = msg?.substring(3, start).trim();
-            console.debug(prefix + message);
+            console.log(prefix + message);
         }
         else {
             console.log(msg);

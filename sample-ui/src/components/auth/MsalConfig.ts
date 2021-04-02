@@ -36,7 +36,7 @@ export class DefaultMsalHandlerConfiguration implements IMsalHandlerConfiguratio
             // b2c configuration
             auth: {
                 clientId: "257d42b5-3a75-4ffe-9057-7ec6bdc4d2b4",
-                authority: "https://who.b2c.wtf/jpdab2c.onmicrosoft.com/B2C_1_susi_rec",
+                authority: "https://jpdab2c.b2clogin.com/jpdab2c.onmicrosoft.com/B2C_1_susi_rec",
                 redirectUri: "http://localhost:3000/",
                 navigateToLoginRequestUrl: false,
                 validateAuthority: false

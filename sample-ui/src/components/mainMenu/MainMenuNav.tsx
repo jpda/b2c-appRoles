@@ -3,28 +3,23 @@ import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import Container from "react-bootstrap/Container";
 import { Link, NavLink } from 'react-router-dom'
-import AuthService from "../auth/AuthService";
+import MsalHandler from "../auth/MsalHandler";
 
 interface Props {
-  AuthService: AuthService;
+  auth: MsalHandler;
   userName: string;
-  authenticationStateChanged: any;
 }
 
 export default class MainMenuNav extends React.Component<Props> {
-  auth: AuthService;
+  auth: MsalHandler;
   constructor(p: Props) {
     super(p);
-    this.auth = p.AuthService;
+    this.auth = p.auth;
     this.state = { userName: p.userName };
   }
 
-  login() {
-    this.auth.login().then(x => {
-      if (x) {
-        this.props.authenticationStateChanged();
-      }
-    });
+  async login() {
+    await this.auth.login();
   }
 
   logout(e: any) {
@@ -42,11 +37,8 @@ export default class MainMenuNav extends React.Component<Props> {
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="mr-auto">
               <Nav.Link as={NavLink} to="/" exact>Home</Nav.Link>
-              <Nav.Link as={NavLink} to="/graph" exact>Graph</Nav.Link>
-              <Nav.Link as={NavLink} to="/calendar" exact>Calendar</Nav.Link>
-              <Nav.Link as={NavLink} to="/power" exact>Your API</Nav.Link>
-              <Nav.Link as={NavLink} to="/groups" exact>Groups</Nav.Link>
-              <Nav.Link as={NavLink} to="/approles" exact>AppRoles</Nav.Link>
+              <Nav.Link as={NavLink} to="/users" exact>Users</Nav.Link>
+              <Nav.Link as={NavLink} to="/apps" exact>Applications</Nav.Link>
               <Nav.Link as={NavLink} to="/claims" exact>Claims</Nav.Link>
             </Nav>
             <Navbar.Collapse className="justify-content-end">
