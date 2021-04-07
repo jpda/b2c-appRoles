@@ -15,16 +15,12 @@ export class AppRoleAssignedToService {
     this.apiClient = apiClient;
   }
 
-  getByServicePrincipalId = async (
-    servicePrincipalId: string,
-    params?: {
-      resourceId?: string;
-    }
+  getByResourceId = async (
+    resourceId: string
   ): Promise<Array<AppRoleAssignment>> => {
     const config: AxiosRequestConfig = {
       method: 'get',
-      params,
-      url: `/v1.0/servicePrincipals/${servicePrincipalId}/appRoleAssignedTo`,
+      url: `/v1.0/servicePrincipals/${resourceId}/appRoleAssignedTo`,
     };
     const response = await this.apiClient.request<Array<AppRoleAssignment>>(
       config
@@ -32,20 +28,16 @@ export class AppRoleAssignedToService {
     return response.data;
   };
 
-  postByServicePrincipalId = async (
-    servicePrincipalId: string,
-    body?: AppRoleAssignment,
-    params?: {
-      resourceId?: string;
-    }
+  postByResourceId = async (
+    resourceId: string,
+    body?: AppRoleAssignment
   ): Promise<AppRoleAssignment> => {
     const config: AxiosRequestConfig = {
       data: {
         ...body,
       },
       method: 'post',
-      params,
-      url: `/v1.0/servicePrincipals/${servicePrincipalId}/appRoleAssignedTo`,
+      url: `/v1.0/servicePrincipals/${resourceId}/appRoleAssignedTo`,
     };
     const response = await this.apiClient.request<AppRoleAssignment>(config);
     return response.data;

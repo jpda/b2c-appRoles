@@ -15,5 +15,6 @@ namespace B2CAuthZ.Admin
         Task<IEnumerable<AppRoleAssignment>> GetUserAppRoleAssignments(User u);
         Task<IEnumerable<AppRoleAssignment>> GetUserAppRoleAssignments(string userObjectId);
         Task<OrganizationUser> SetUserOrganization(OrganizationMembership membership);
+        Task<IEnumerable<OrganizationUser>> SearchUser(string query);
     }
 }

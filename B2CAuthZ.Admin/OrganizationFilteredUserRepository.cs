@@ -172,5 +172,10 @@ namespace B2CAuthZ.Admin
             var user = await FindUserBySignInName(name);
             return new OrganizationUser(user, _options.OrgIdExtensionName, _options.OrgRoleExtensionName);
         }
+
+        public async Task<IEnumerable<OrganizationUser>> SearchUser(string query)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

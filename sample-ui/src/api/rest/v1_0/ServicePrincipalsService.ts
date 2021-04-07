@@ -23,4 +23,15 @@ export class ServicePrincipalsService {
     const response = await this.apiClient.request<UserApplication>(config);
     return response.data;
   };
+
+  deleteByResourceId = async (
+    resourceId: string,
+    appRoleAssignmentId: string
+  ): Promise<void> => {
+    const config: AxiosRequestConfig = {
+      method: 'delete',
+      url: `/v1.0/servicePrincipals/${resourceId}/appRoleAssignedTo/${appRoleAssignmentId}`,
+    };
+    await this.apiClient.request(config);
+  };
 }

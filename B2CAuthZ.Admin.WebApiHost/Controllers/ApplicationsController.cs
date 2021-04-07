@@ -46,6 +46,18 @@ namespace B2CAuthZ.Admin.WebApiHost.Controllers
         [Route("servicePrincipals/{resourceId:guid}/appRoleAssignedTo")]
         public async Task<IEnumerable<AppRoleAssignment>> GetApplicationAppRoleAssignments(Guid resourceId) => await _appsRepo.GetAppRoleAssignmentsByResource(resourceId);
 
+        [HttpDelete]
+        [Route("servicePrincipals/{resourceId:guid}/appRoleAssignedTo/{appRoleAssignmentId}")]
+        public async Task<IActionResult> DeleteApplicationAppRoleAssignment(Guid resourceId, string appRoleAssignmentId)
+        {
+            var deletion = await _appsRepo.DeleteAppRoleAssignmentByResource(resourceId, appRoleAssignmentId);
+            if (deletion)
+            {
+                return new NoContentResult();
+            }
+            return new UnauthorizedResult();
+        }
+
         [HttpPost]
         [Route("servicePrincipals/{resourceId:guid}/appRoleAssignedTo")]
         public async Task<AppRoleAssignment> AddApplicationRoleAssignment(Guid resourceId, [FromBody] Microsoft.Graph.AppRoleAssignment request)

@@ -25,7 +25,7 @@ namespace B2CAuthZ.Admin.WebApiHost
             services.AddApplicationInsightsTelemetry();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAdB2C"));
-
+ 
             services.AddHttpContextAccessor(); // should already be here due to microsoft.identity.web above
             services.AddOptions<AzureAdAdminConfiguration>()
                 .Configure<IConfiguration>((opt, config) =>
@@ -79,7 +79,11 @@ namespace B2CAuthZ.Admin.WebApiHost
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
+                app.UseSwagger(x=>
+                    {
+                        x.SerializeAsV2 = true;
+                    }
+                );
                 app.UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint("/swagger/v1.0/swagger.json", "B2C Authorization Administration v1.0");

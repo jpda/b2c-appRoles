@@ -13,5 +13,6 @@ namespace B2CAuthZ.Admin
         Task<IEnumerable<UserApplication>> GetResources();
         Task<IEnumerable<AppRole>> GetAppRolesByResource(Guid resourceId);
         Task<IEnumerable<AppRoleAssignment>> GetAppRoleAssignmentsByResource(Guid resourceId);
+        Task<bool> DeleteAppRoleAssignmentByResource(Guid resourceId, string appRoleAssignmentId);
     }
 }

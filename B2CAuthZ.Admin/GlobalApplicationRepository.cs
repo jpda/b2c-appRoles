@@ -24,6 +24,11 @@ namespace B2CAuthZ.Admin
             throw new NotImplementedException();
         }
 
+        public Task<bool> DeleteAppRoleAssignmentByResource(Guid resourceId, string appRoleAssignmentId)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<IEnumerable<AppRoleAssignment>> GetAppRoleAssignmentsByResource(Guid resourceId)
         {
             throw new NotImplementedException();

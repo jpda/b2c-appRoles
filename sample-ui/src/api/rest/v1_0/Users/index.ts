@@ -6,3 +6,4 @@
  */
 
 export * from './AppRoleAssignmentsService';
+export * from './SearchService';

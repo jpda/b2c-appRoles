@@ -126,7 +126,7 @@ namespace B2CAuthZ.Admin
             var appId = await _graphClient.ServicePrincipals[app.ResourceId.ToString()].Request().Select("appId").GetAsync();
             if (appId == null) return new List<AppRole>();
 
-            var appRoles = await _graphClient.Applications.Request().Filter($"appId eq {appId.AppId}").Select("appRoles").GetAsync();
+            var appRoles = await _graphClient.Applications.Request().Filter($"appId eq '{appId.AppId}'").Select("appRoles").GetAsync();
             return appRoles.SingleOrDefault().AppRoles;
         }
 
@@ -162,8 +162,7 @@ namespace B2CAuthZ.Admin
                     PrincipalId = Guid.Parse(principal.Id),
                     AppRoleId = appRoleId
                 };
-                await _graphClient.ServicePrincipals[resource.ResourceId.ToString()].AppRoleAssignedTo.Request().AddAsync(assignment);
-                return assignment;
+                return await _graphClient.ServicePrincipals[resource.ResourceId.ToString()].AppRoleAssignedTo.Request().AddAsync(assignment);
             }
             return null;
         }
@@ -193,6 +192,42 @@ namespace B2CAuthZ.Admin
 
             // todo: resolve role values
             return assignments.Where(x => users.Any(u => u.Id == x.PrincipalId.ToString()));
+        }
+
+        public async Task<bool> DeleteAppRoleAssignmentByResource(Guid resourceId, string appRoleAssignmentId)
+        {
+            var app = await GetResourceUserCanAdminister(resourceId);
+            if (app == null) return false;
+
+            var assignmentRequest = _graphClient.ServicePrincipals[app.ResourceId.ToString()].AppRoleAssignedTo[appRoleAssignmentId];
+
+            var assignment = await assignmentRequest
+                .Request()
+                .Select(_options.AppRoleAssignmentFieldSelection)
+                .GetAsync();
+
+            // see if user is in caller's org
+            var user = await _graphClient.Users[assignment.PrincipalId.ToString()]
+                    .Request()
+                    .Select(_options.UserFieldSelection)
+                    .GetAsync()
+                    ;
+
+            if (!user.AdditionalData.Any()) return false;
+            bool userOrgMatch = false;
+            if (user.AdditionalData.ContainsKey(_options.OrgIdExtensionName))
+            {
+                var orgData = user.AdditionalData[_options.OrgIdExtensionName].ToString();
+                userOrgMatch = string.Equals(orgData, _orgId, StringComparison.OrdinalIgnoreCase);
+            }
+
+            if (userOrgMatch) // delete only if match
+            {
+                await assignmentRequest.Request().DeleteAsync();
+                return true;
+            }
+
+            return false;
         }
     }
 }

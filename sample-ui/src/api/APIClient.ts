@@ -11,7 +11,7 @@ import {
   ServicePrincipalsService,
   UsersService,
 } from './rest/v1_0/';
-import { AppRoleAssignmentsService } from './rest/v1_0/Users/';
+import { AppRoleAssignmentsService, SearchService } from './rest/v1_0/Users/';
 import {
   AppRoleAssignedToService,
   AppRolesService,
@@ -51,6 +51,7 @@ export class APIClient {
           appRoleAssignmentsService: new AppRoleAssignmentsService(
             this.httpClient
           ),
+          searchService: new SearchService(this.httpClient),
         },
         serviceprincipals: {
           appRoleAssignedToService: new AppRoleAssignedToService(

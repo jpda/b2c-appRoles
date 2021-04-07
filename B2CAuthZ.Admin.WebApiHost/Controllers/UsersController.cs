@@ -38,6 +38,10 @@ namespace B2CAuthZ.Admin.WebApiHost.Controllers
         public async Task<OrganizationUser> Get(Guid userId) => await _userRepo.GetOrganizationUser(userId.ToString());
 
         [HttpGet]
+        [Route("search/{query}")]
+        public async Task<OrganizationUser> Get(string query) => await _userRepo.FindOrganizationUserBySignInName(query);
+
+        [HttpGet]
         [Route("{userId:guid}/appRoleAssignments")]
         public async Task<IEnumerable<AppRoleAssignment>> GetUserAppRoleAssignments(Guid userId) => await _userRepo.GetUserAppRoleAssignments(userId.ToString());
     }

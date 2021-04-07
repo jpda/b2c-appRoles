@@ -11,6 +11,7 @@ import MsalHandler from "./components/auth/MsalHandler";
 import { APIClient } from "./api/APIClient";
 import { AppsView } from "./components/apps/AppsView";
 import { AppAssignmentsView } from "./components/apps/AppAssignmentsView";
+import { AppAssignmentForm } from "./components/apps/AppAssignmentForm";
 
 interface State {
   userName: string;
@@ -56,8 +57,9 @@ class App extends Component<any, State> {
             <Switch>
               <Route path="/users"><UsersView apiClient={this.apiClient} /></Route>
               <Route path="/apps" exact><AppsView apiClient={this.apiClient} /></Route>
-              <Route path="/apps/:resourceId/assignments" render={({ match }: MatchProps) => (<AppAssignmentsView apiClient={this.apiClient} resourceId={match.params.resourceId} />)} />
-              <Route path="/claims" component={ClaimsView} />
+              <Route path="/apps/:resourceId/assignments" exact render={({ match }: MatchProps) => (<AppAssignmentsView apiClient={this.apiClient} resourceId={match.params.resourceId} />)} />
+              <Route path="/apps/:resourceId/assignments/add" render={({ match }: MatchProps) => (<AppAssignmentForm apiClient={this.apiClient} resourceId={match.params.resourceId} />)} />
+              <Route path="/claims"><ClaimsView auth={this.msalHandler}/></Route>
             </Switch>
           </Container>
         </div>
