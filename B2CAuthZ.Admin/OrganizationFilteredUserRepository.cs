@@ -39,7 +39,7 @@ namespace B2CAuthZ.Admin
             IOptions<OrganizationOptions> options
         ) : base(client, user, options) { }
 
-        public async Task<User> GetUser(string userId)
+        public async Task<ServiceResult<User>> GetUser(string userId)
         {
             var user = await _graphClient.Users[userId]
                 .Request()
@@ -53,13 +53,13 @@ namespace B2CAuthZ.Admin
                 var orgData = user.AdditionalData[_options.OrgIdExtensionName].ToString();
                 if (string.Equals(orgData, _orgId, StringComparison.OrdinalIgnoreCase))
                 {
-                    return user;
+                    return ServiceResult<User>.FromResult(user);
                 }
             }
             return null;
         }
 
-        public async Task<User> FindUserBySignInName(string userSignInName)
+        public async Task<ServiceResult<User>> FindUserBySignInName(string userSignInName)
         {
             var filter = new QueryOption(
                 "$filter"
@@ -70,59 +70,61 @@ namespace B2CAuthZ.Admin
                 .Select(_options.UserFieldSelection)
                 .GetAsync();
 
-            if (!userList.Any()) throw new Exception("user not found");
-            if (userList.Count > 1) throw new Exception("too many users");
+            if (!userList.Any()) return ServiceResult<User>.FromError("user not found");
+            if (userList.Count > 1) return ServiceResult<User>.FromError("too many users");
 
             var user = userList.Single();
-            if (!user.AdditionalData.Any()) throw new Exception("user doesn't have an orgid");
+            if (user.AdditionalData == null || user.AdditionalData.Any()) return ServiceResult<User>.FromError("user doesn't have an orgid");
 
             if (user.AdditionalData.ContainsKey(_options.OrgIdExtensionName))
             {
                 var orgData = user.AdditionalData[_options.OrgIdExtensionName].ToString();
                 if (string.Equals(orgData, _orgId, StringComparison.OrdinalIgnoreCase))
                 {
-                    return user;
+                    return ServiceResult<User>.FromResult(user);
                 }
             }
-            throw new Exception("user has no org id or malformed");
+            return ServiceResult<User>.FromError("user has no org id or malformed");
         }
 
-        public async Task<IEnumerable<User>> GetUsers()
+        public async Task<ServiceResult<IEnumerable<User>>> GetUsers()
         {
             var filter = new QueryOption("$filter", $"{_options.OrgIdExtensionName} eq '{_orgId}'");
             var users = await _graphClient.Users
                 .Request(new List<QueryOption>() { filter })
                 .Select(_options.UserFieldSelection)
                 .GetAsync();
-            return users.AsEnumerable();
+
+            return ServiceResult<IEnumerable<User>>.FromResult(users.AsEnumerable());
         }
 
-        public async Task<IEnumerable<AppRoleAssignment>> GetUserAppRoleAssignments(User u)
+        public async Task<ServiceResult<IEnumerable<AppRoleAssignment>>> GetUserAppRoleAssignments(User u)
         {
             return await this.GetUserAppRoleAssignments(u.Id);
         }
-        public async Task<IEnumerable<AppRoleAssignment>> GetUserAppRoleAssignments(string userObjectId)
+        public async Task<ServiceResult<IEnumerable<AppRoleAssignment>>> GetUserAppRoleAssignments(string userObjectId)
         {
             var user = await _graphClient.Users[userObjectId]
                 .Request()
                 .Select(_options.UserFieldSelection)
                 .GetAsync();
 
-            if (!user.AdditionalData.Any()) return null;
+            if (user.AdditionalData == null || !user.AdditionalData.Any()) return null;
             if (user.AdditionalData.ContainsKey(_options.OrgIdExtensionName))
             {
                 var orgData = user.AdditionalData[_options.OrgIdExtensionName].ToString();
                 if (string.Equals(orgData, _orgId, StringComparison.OrdinalIgnoreCase))
                 {
-                    return await _graphClient.Users[userObjectId].AppRoleAssignments
+                    var results = await _graphClient.Users[userObjectId].AppRoleAssignments
                         .Request()
                         .GetAsync();
+                    return ServiceResult<IEnumerable<AppRoleAssignment>>.FromResult(results);
                 }
             }
-            return new List<AppRoleAssignment>();
+            return ServiceResult<IEnumerable<AppRoleAssignment>>.FromError("No roles found");
         }
 
-        public async Task<OrganizationUser> SetUserOrganization(OrganizationMembership membership)
+        public async Task<ServiceResult<OrganizationUser>> SetUserOrganization(OrganizationMembership membership)
         {
             if (membership.OrgId != _orgId) return null; // get out, user is trying to add a user to a different org than their own
 
@@ -138,7 +140,7 @@ namespace B2CAuthZ.Admin
                 user.AdditionalData[_options.OrgIdExtensionName] = membership.OrgId;
                 user.AdditionalData[_options.OrgRoleExtensionName] = membership.Role;
                 await userRequest.UpdateAsync(user);
-                return new OrganizationUser(user, _options.OrgIdExtensionName, _options.OrgRoleExtensionName);
+                return ServiceResult<OrganizationUser>.FromResult(new OrganizationUser(user, _options.OrgIdExtensionName, _options.OrgRoleExtensionName));
             }
 
             if (user.AdditionalData.ContainsKey(_options.OrgIdExtensionName))
@@ -149,33 +151,101 @@ namespace B2CAuthZ.Admin
                     // already in org, set role
                     user.AdditionalData[_options.OrgRoleExtensionName] = membership.Role;
                     await userRequest.UpdateAsync(user);
-                    return new OrganizationUser(user, _options.OrgIdExtensionName, _options.OrgRoleExtensionName);
+                    return ServiceResult<OrganizationUser>.FromResult(new OrganizationUser(user, _options.OrgIdExtensionName, _options.OrgRoleExtensionName));
                 }
             }
-            return new OrganizationUser(user, _options.OrgIdExtensionName, _options.OrgRoleExtensionName);
+            return ServiceResult<OrganizationUser>.FromResult(new OrganizationUser(user, _options.OrgIdExtensionName, _options.OrgRoleExtensionName));
         }
 
-        public async Task<OrganizationUser> GetOrganizationUser(string userId)
+        public async Task<ServiceResult<OrganizationUser>> GetOrganizationUser(string userId)
         {
             var user = await GetUser(userId);
-            return new OrganizationUser(user, _options.OrgIdExtensionName, _options.OrgRoleExtensionName);
+            if (user.Success)
+            {
+                return ServiceResult<OrganizationUser>.FromResult(new OrganizationUser(user.Value, _options.OrgIdExtensionName, _options.OrgRoleExtensionName));
+            }
+            return ServiceResult<OrganizationUser>.FromError(user.Exception);
         }
 
-        public async Task<IEnumerable<OrganizationUser>> GetOrganizationUsers()
+        public async Task<ServiceResult<IEnumerable<OrganizationUser>>> GetOrganizationUsers()
         {
             var users = await this.GetUsers();
-            return users.Select(x => new OrganizationUser(x, _options.OrgIdExtensionName, _options.OrgRoleExtensionName));
+            if (users.Success)
+            {
+                return ServiceResult<IEnumerable<OrganizationUser>>.FromResult(users.Value.Select(x => new OrganizationUser(x, _options.OrgIdExtensionName, _options.OrgRoleExtensionName)));
+            }
+            return ServiceResult<IEnumerable<OrganizationUser>>.FromError(users.Exception);
         }
 
-        public async Task<OrganizationUser> FindOrganizationUserBySignInName(string name)
+        public async Task<ServiceResult<OrganizationUser>> FindOrganizationUserBySignInName(string name)
         {
             var user = await FindUserBySignInName(name);
-            return new OrganizationUser(user, _options.OrgIdExtensionName, _options.OrgRoleExtensionName);
+            if (user.Success)
+            {
+                return ServiceResult<OrganizationUser>.FromResult(new OrganizationUser(user.Value, _options.OrgIdExtensionName, _options.OrgRoleExtensionName));
+            }
+            return ServiceResult<OrganizationUser>.FromError(user.Exception);
         }
 
-        public async Task<IEnumerable<OrganizationUser>> SearchUser(string query)
+        public async Task<ServiceResult<IEnumerable<OrganizationUser>>> SearchUser(string query)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    public abstract class ServiceResult
+    {
+        public string Message { get; set; }
+        public bool Success { get; set; }
+        public Exception Exception { get; set; }
+    }
+
+    public class ServiceResult<T> : ServiceResult
+    {
+        public T Value { get; set; }
+        public ServiceResult() { }
+
+        public ServiceResult(T value)
+        {
+            Value = value;
+            Success = true;
+        }
+
+        public static ServiceResult<T> FromError(string error)
+        {
+            return new ServiceResult<T>()
+            {
+                Message = error,
+                Success = false,
+                Exception = new Exception(error)
+            };
+        }
+        public static ServiceResult<T> FromError(Exception ex)
+        {
+            return new ServiceResult<T>()
+            {
+                Message = ex.Message,
+                Success = false,
+                Exception = ex
+            };
+        }
+
+        public static ServiceResult<T> FromResult(T thing)
+        {
+            return new ServiceResult<T>(thing);
+        }
+        public static ServiceResult<T> FromError(string message, T value)
+        {
+            var result = FromError(message);
+            result.Value = value;
+            return result;
+        }
+
+        public static ServiceResult<T> FromError(Exception ex, T value)
+        {
+            var result = FromError(ex);
+            result.Value = value;
+            return result;
         }
     }
 }

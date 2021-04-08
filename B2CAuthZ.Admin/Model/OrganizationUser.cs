@@ -14,7 +14,7 @@ namespace B2CAuthZ.Admin
             this.Surname = u.Surname;
             this.UserPrincipalName = u.UserPrincipalName;
 
-            if (!u.AdditionalData.Any()) return;
+            if (u.AdditionalData == null || !u.AdditionalData.Any()) return;
             if (u.AdditionalData.ContainsKey(orgIdExtension))
             {
                 this.OrgId = u.AdditionalData[orgIdExtension].ToString();

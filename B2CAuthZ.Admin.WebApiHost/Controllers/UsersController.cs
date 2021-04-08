@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
@@ -28,23 +29,40 @@ namespace B2CAuthZ.Admin.WebApiHost.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<OrganizationUser>> GetUsers()
-        {
-            return await _userRepo.GetOrganizationUsers();
-        }
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<OrganizationUser>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Exception))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetUsers() => await GenerateReturn(async () => await _userRepo.GetOrganizationUsers());
 
         [HttpGet]
         [Route("{userId:guid}")]
-        public async Task<OrganizationUser> Get(Guid userId) => await _userRepo.GetOrganizationUser(userId.ToString());
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OrganizationUser))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Exception))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Get(Guid userId) => await GenerateReturn(async () => await _userRepo.GetOrganizationUser(userId.ToString()));
 
         [HttpGet]
         [Route("search/{query}")]
-        public async Task<OrganizationUser> Get(string query) => await _userRepo.FindOrganizationUserBySignInName(query);
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OrganizationUser))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Exception))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Get(string query) => await GenerateReturn(async () => await _userRepo.FindOrganizationUserBySignInName(query));
 
         [HttpGet]
         [Route("{userId:guid}/appRoleAssignments")]
-        public async Task<IEnumerable<AppRoleAssignment>> GetUserAppRoleAssignments(Guid userId) => await _userRepo.GetUserAppRoleAssignments(userId.ToString());
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AppRoleAssignment>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Exception))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetUserAppRoleAssignments(Guid userId) => await GenerateReturn(() => _userRepo.GetUserAppRoleAssignments(userId.ToString()));
+
+        private async Task<IActionResult> GenerateReturn<T>(Func<Task<ServiceResult<T>>> work)
+        {
+            var result = await work();
+            if (result.Success)
+            {
+                return new OkObjectResult(result.Value);
+            }
+            return new BadRequestObjectResult(result.Exception);
+        }
     }
-
-
 }

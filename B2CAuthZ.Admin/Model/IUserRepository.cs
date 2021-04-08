@@ -6,15 +6,15 @@ namespace B2CAuthZ.Admin
 {
     public interface IUserRepository
     {
-        Task<IEnumerable<User>> GetUsers();
-        Task<User> GetUser(string userId);
-        Task<User> FindUserBySignInName(string userSignInName);
-        Task<IEnumerable<OrganizationUser>> GetOrganizationUsers();
-        Task<OrganizationUser> GetOrganizationUser(string userId);
-        Task<OrganizationUser> FindOrganizationUserBySignInName(string userSignInName);
-        Task<IEnumerable<AppRoleAssignment>> GetUserAppRoleAssignments(User u);
-        Task<IEnumerable<AppRoleAssignment>> GetUserAppRoleAssignments(string userObjectId);
-        Task<OrganizationUser> SetUserOrganization(OrganizationMembership membership);
-        Task<IEnumerable<OrganizationUser>> SearchUser(string query);
+        Task<ServiceResult<IEnumerable<User>>> GetUsers();
+        Task<ServiceResult<User>> GetUser(string userId);
+        Task<ServiceResult<User>> FindUserBySignInName(string userSignInName);
+        Task<ServiceResult<IEnumerable<OrganizationUser>>> GetOrganizationUsers();
+        Task<ServiceResult<OrganizationUser>> GetOrganizationUser(string userId);
+        Task<ServiceResult<OrganizationUser>> FindOrganizationUserBySignInName(string userSignInName);
+        Task<ServiceResult<IEnumerable<AppRoleAssignment>>> GetUserAppRoleAssignments(User u);
+        Task<ServiceResult<IEnumerable<AppRoleAssignment>>> GetUserAppRoleAssignments(string userObjectId);
+        Task<ServiceResult<OrganizationUser>> SetUserOrganization(OrganizationMembership membership);
+        Task<ServiceResult<IEnumerable<OrganizationUser>>> SearchUser(string query);
     }
 }
