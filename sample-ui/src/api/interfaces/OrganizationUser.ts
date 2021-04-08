@@ -5,6 +5,8 @@
  * It should not be modified by hand.
  */
 
+import {ObjectIdentity} from './ObjectIdentity';
+
 export interface OrganizationUser {
   id?: string;
   displayName?: string;
@@ -13,4 +15,6 @@ export interface OrganizationUser {
   userPrincipalName?: string;
   orgId?: string;
   orgRole?: string;
+  signInNames?: Array<string>;
+  identities?: Array<ObjectIdentity>;
 }

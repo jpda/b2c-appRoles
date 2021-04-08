@@ -140,7 +140,7 @@ namespace B2CAuthZ.Admin
                 user.AdditionalData[_options.OrgIdExtensionName] = membership.OrgId;
                 user.AdditionalData[_options.OrgRoleExtensionName] = membership.Role;
                 await userRequest.UpdateAsync(user);
-                return ServiceResult<OrganizationUser>.FromResult(new OrganizationUser(user, _options.OrgIdExtensionName, _options.OrgRoleExtensionName));
+                return ServiceResult<OrganizationUser>.FromResult(new OrganizationUser(user, _options));
             }
 
             if (user.AdditionalData.ContainsKey(_options.OrgIdExtensionName))
@@ -151,10 +151,10 @@ namespace B2CAuthZ.Admin
                     // already in org, set role
                     user.AdditionalData[_options.OrgRoleExtensionName] = membership.Role;
                     await userRequest.UpdateAsync(user);
-                    return ServiceResult<OrganizationUser>.FromResult(new OrganizationUser(user, _options.OrgIdExtensionName, _options.OrgRoleExtensionName));
+                    return ServiceResult<OrganizationUser>.FromResult(new OrganizationUser(user, _options));
                 }
             }
-            return ServiceResult<OrganizationUser>.FromResult(new OrganizationUser(user, _options.OrgIdExtensionName, _options.OrgRoleExtensionName));
+            return ServiceResult<OrganizationUser>.FromResult(new OrganizationUser(user, _options));
         }
 
         public async Task<ServiceResult<OrganizationUser>> GetOrganizationUser(string userId)
@@ -162,7 +162,7 @@ namespace B2CAuthZ.Admin
             var user = await GetUser(userId);
             if (user.Success)
             {
-                return ServiceResult<OrganizationUser>.FromResult(new OrganizationUser(user.Value, _options.OrgIdExtensionName, _options.OrgRoleExtensionName));
+                return ServiceResult<OrganizationUser>.FromResult(new OrganizationUser(user.Value, _options));
             }
             return ServiceResult<OrganizationUser>.FromError(user.Exception);
         }
@@ -172,7 +172,7 @@ namespace B2CAuthZ.Admin
             var users = await this.GetUsers();
             if (users.Success)
             {
-                return ServiceResult<IEnumerable<OrganizationUser>>.FromResult(users.Value.Select(x => new OrganizationUser(x, _options.OrgIdExtensionName, _options.OrgRoleExtensionName)));
+                return ServiceResult<IEnumerable<OrganizationUser>>.FromResult(users.Value.Select(x => new OrganizationUser(x, _options)));
             }
             return ServiceResult<IEnumerable<OrganizationUser>>.FromError(users.Exception);
         }
@@ -182,7 +182,7 @@ namespace B2CAuthZ.Admin
             var user = await FindUserBySignInName(name);
             if (user.Success)
             {
-                return ServiceResult<OrganizationUser>.FromResult(new OrganizationUser(user.Value, _options.OrgIdExtensionName, _options.OrgRoleExtensionName));
+                return ServiceResult<OrganizationUser>.FromResult(new OrganizationUser(user.Value, _options));
             }
             return ServiceResult<OrganizationUser>.FromError(user.Exception);
         }
@@ -234,6 +234,7 @@ namespace B2CAuthZ.Admin
         {
             return new ServiceResult<T>(thing);
         }
+        
         public static ServiceResult<T> FromError(string message, T value)
         {
             var result = FromError(message);

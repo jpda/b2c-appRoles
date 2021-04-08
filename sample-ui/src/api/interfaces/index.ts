@@ -8,4 +8,6 @@
 export * from './AppRoleAssignment';
 export * from './UserApplication';
 export * from './AppRole';
+export * from './ObjectIdentity';
 export * from './OrganizationUser';
+export * from './ProblemDetails';

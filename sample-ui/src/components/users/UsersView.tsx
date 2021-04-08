@@ -58,12 +58,13 @@ export class UsersView extends React.Component<Props, State> {
                 </Row>
                 <Row>
                     <Table bordered striped>
-                        <thead><tr><th>Key</th><th>Value</th></tr></thead>
+                        <thead><tr><th>User</th><th>Sign-in names</th><th>User ID</th></tr></thead>
                         <tbody>
                             {
                                 this.state.userInfo.map((x, i) => {
                                     return <tr key={i}>
                                         <td>{x.displayName}</td>
+                                        <td>{x.signInNames?.join()}</td>
                                         <td>{x.id}</td>
                                     </tr>
                                 })

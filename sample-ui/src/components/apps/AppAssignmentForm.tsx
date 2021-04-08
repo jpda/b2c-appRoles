@@ -14,6 +14,7 @@ interface State {
     appRoles: AppRole[];
     user: OrganizationUser;
     query: string;
+    selectedRoleId: string;
 }
 
 export class AppAssignmentForm extends React.Component<Props, State> {
@@ -25,7 +26,7 @@ export class AppAssignmentForm extends React.Component<Props, State> {
     constructor(props: Props, state: State) {
         super(props, state);
         this.resourceId = props.resourceId;
-        this.state = { appInfo: {}, appRoles: [], user: {}, query: "" };
+        this.state = { appInfo: {}, appRoles: [], user: {}, query: "", selectedRoleId: "" };
         this.apiClient = props.apiClient;
     }
 
@@ -42,9 +43,17 @@ export class AppAssignmentForm extends React.Component<Props, State> {
         this.setState({ appInfo: this.state.appInfo, appRoles: resourceAppRoles });
     }
 
-    async addAssignment(assignment: AppRoleAssignment) {
+    async addAssignment(event: any) {
+        event.preventDefault();
+        alert(JSON.stringify(event.target.value));
+        var assignment: AppRoleAssignment = {
+            appRoleId: this.state.selectedRoleId,
+            principalId: this.state.user.id,
+            resourceId: this.resourceId
+        };
+        alert(JSON.stringify(assignment));
         var appsService = this.apiClient.rest.v1_0.serviceprincipals.appRoleAssignedToService;
-        await appsService.postByResourceId(this.resourceId, assignment);
+        //await appsService.postByResourceId(this.resourceId, assignment);
     }
 
     async removeAssignment(assignmentId: string) {
@@ -59,7 +68,11 @@ export class AppAssignmentForm extends React.Component<Props, State> {
         var userService = this.apiClient.rest.v1_0.users.searchService;
         console.log(`resolving ${data}`);
         var foundUser = await userService.getByQuery(data);
-        this.setState({user: foundUser});
+        this.setState({ user: foundUser });
+    }
+
+    setSelectedRole(event: any){
+        this.setState({selectedRoleId: event.target.value});
     }
 
     render() {
@@ -72,7 +85,7 @@ export class AppAssignmentForm extends React.Component<Props, State> {
                     <h3>{this.state.user.displayName} {this.state.user.userPrincipalName}</h3>
                 </Row>
                 <Row>
-                    <Form>
+                    <Form onSubmit={this.addAssignment.bind(this)}>
                         <Form.Group controlId="userSearch">
                             <Form.Label>User</Form.Label>
                             <Form.Control type="string" placeholder="Enter email" defaultValue={this.state.query} value={this.state.user.displayName} onBlur={this.resolveUser.bind(this)} />
@@ -80,7 +93,7 @@ export class AppAssignmentForm extends React.Component<Props, State> {
                         </Form.Group>
                         <Form.Group controlId="userSelectedRole">
                             <Form.Label>Role</Form.Label>
-                            <Form.Control as="select" placeholder="Choose a role...">
+                            <Form.Control as="select" onChange={this.setSelectedRole.bind(this)} placeholder="Choose a role...">
                                 {
                                     this.state.appRoles.map((x, i) => {
                                         return <option key={i} value={x.id}>{x.displayName}</option>;

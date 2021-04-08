@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 
 namespace B2CAuthZ.Admin
@@ -6,7 +7,7 @@ namespace B2CAuthZ.Admin
     {
         public OrganizationUser() { }
 
-        internal OrganizationUser(Microsoft.Graph.User u, string orgIdExtension, string orgRoleExtension)
+        internal OrganizationUser(Microsoft.Graph.User u, string orgIdExtension, string orgRoleExtension, string tenantIssuerName)
         {
             this.Id = u.Id;
             this.DisplayName = u.DisplayName;
@@ -23,7 +24,12 @@ namespace B2CAuthZ.Admin
             {
                 this.OrgRole = u.AdditionalData[orgRoleExtension].ToString();
             }
+            if (u.Identities == null || !u.Identities.Any()) return;
+            SignInNames = u.Identities.Where(x => x.Issuer == tenantIssuerName && x.SignInType != "userPrincipalName").Select(x => x.IssuerAssignedId);
+            Identities = u.Identities;
         }
+
+        internal OrganizationUser(Microsoft.Graph.User u, OrganizationOptions config) : this(u, config.OrgIdExtensionName, config.OrgRoleExtensionName, config.TenantIssuerName) { }
 
         public string Id { get; set; }
         public string DisplayName { get; set; }
@@ -32,5 +38,7 @@ namespace B2CAuthZ.Admin
         public string UserPrincipalName { get; set; }
         public string OrgId { get; set; }
         public string OrgRole { get; set; }
+        public IEnumerable<string> SignInNames { get; set; }
+        public IEnumerable<Microsoft.Graph.ObjectIdentity> Identities { get; set; }
     }
 }
