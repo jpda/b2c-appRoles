@@ -75,7 +75,7 @@ export class AppAssignmentForm extends React.Component<Props, State> {
                     <Form>
                         <Form.Group controlId="userSearch">
                             <Form.Label>User</Form.Label>
-                            <Form.Control type="string" placeholder="Enter email" defaultValue={this.state.query} onBlur={this.resolveUser.bind(this)} />
+                            <Form.Control type="string" placeholder="Enter email" defaultValue={this.state.query} value={this.state.user.displayName} onBlur={this.resolveUser.bind(this)} />
                             <Form.Text className="text-muted">Enter a username or email</Form.Text>
                         </Form.Group>
                         <Form.Group controlId="userSelectedRole">

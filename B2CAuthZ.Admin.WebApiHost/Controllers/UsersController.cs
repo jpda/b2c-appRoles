@@ -30,28 +30,28 @@ namespace B2CAuthZ.Admin.WebApiHost.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<OrganizationUser>))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Exception))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetUsers() => await GenerateReturn(async () => await _userRepo.GetOrganizationUsers());
 
         [HttpGet]
         [Route("{userId:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OrganizationUser))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Exception))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get(Guid userId) => await GenerateReturn(async () => await _userRepo.GetOrganizationUser(userId.ToString()));
 
         [HttpGet]
         [Route("search/{query}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OrganizationUser))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Exception))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get(string query) => await GenerateReturn(async () => await _userRepo.FindOrganizationUserBySignInName(query));
 
         [HttpGet]
         [Route("{userId:guid}/appRoleAssignments")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AppRoleAssignment>))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Exception))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetUserAppRoleAssignments(Guid userId) => await GenerateReturn(() => _userRepo.GetUserAppRoleAssignments(userId.ToString()));
 

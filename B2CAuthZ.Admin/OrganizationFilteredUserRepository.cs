@@ -74,7 +74,7 @@ namespace B2CAuthZ.Admin
             if (userList.Count > 1) return ServiceResult<User>.FromError("too many users");
 
             var user = userList.Single();
-            if (user.AdditionalData == null || user.AdditionalData.Any()) return ServiceResult<User>.FromError("user doesn't have an orgid");
+            if (user.AdditionalData == null || !user.AdditionalData.Any()) return ServiceResult<User>.FromError("user doesn't have an orgid");
 
             if (user.AdditionalData.ContainsKey(_options.OrgIdExtensionName))
             {
