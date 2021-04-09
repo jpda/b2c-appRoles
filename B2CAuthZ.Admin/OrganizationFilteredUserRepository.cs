@@ -24,6 +24,30 @@ namespace B2CAuthZ.Admin
         }
     }
 
+    public static class GraphClientExtensions
+    {
+        public static IBaseRequest AddOrganizationFilter(this IBaseRequest req, string orgId, string orgIdExtensionName)
+        {
+            req.QueryOptions.Add(new QueryOption("$filter", $"{orgIdExtensionName} eq '${orgId}'"));
+            return req;
+        }
+        public static T AddOrganizationFilter<T>(this T req, string orgId, OrganizationOptions options) where T : IBaseRequest
+        {
+            req.QueryOptions.Add(new QueryOption("$filter", $"{options.OrgIdExtensionName} eq '${orgId}'"));
+            return req;
+        }
+        public static bool VerifyAccess(this Microsoft.Graph.User user, string orgId, OrganizationOptions options)
+        {
+            if (!user.AdditionalData.Any()) return false;
+            if (user.AdditionalData == null || user.AdditionalData.ContainsKey(options.OrgIdExtensionName))
+            {
+                var orgData = user.AdditionalData[options.OrgIdExtensionName].ToString();
+                return string.Equals(orgData, orgId, StringComparison.OrdinalIgnoreCase);
+            }
+            return false;
+        }
+    }
+
     public class OrganizationFilteredUserRepository : FilteredRepository, IUserRepository
     {
         // todo: better way to get the user data in here without using the httpContext
@@ -46,17 +70,11 @@ namespace B2CAuthZ.Admin
                 .Select(_options.UserFieldSelection)
                 .GetAsync();
 
-            // todo: wrap this in ServiceResult or similar
-            if (!user.AdditionalData.Any()) return null;
-            if (user.AdditionalData.ContainsKey(_options.OrgIdExtensionName))
+            if (user.VerifyAccess(_orgId, _options))
             {
-                var orgData = user.AdditionalData[_options.OrgIdExtensionName].ToString();
-                if (string.Equals(orgData, _orgId, StringComparison.OrdinalIgnoreCase))
-                {
-                    return ServiceResult<User>.FromResult(user);
-                }
+                return ServiceResult<User>.FromResult(user);
             }
-            return null;
+            return ServiceResult<User>.FromError("Not found");
         }
 
         public async Task<ServiceResult<User>> FindUserBySignInName(string userSignInName)
@@ -74,15 +92,9 @@ namespace B2CAuthZ.Admin
             if (userList.Count > 1) return ServiceResult<User>.FromError("too many users");
 
             var user = userList.Single();
-            if (user.AdditionalData == null || !user.AdditionalData.Any()) return ServiceResult<User>.FromError("user doesn't have an orgid");
-
-            if (user.AdditionalData.ContainsKey(_options.OrgIdExtensionName))
+            if (user.VerifyAccess(_orgId, _options))
             {
-                var orgData = user.AdditionalData[_options.OrgIdExtensionName].ToString();
-                if (string.Equals(orgData, _orgId, StringComparison.OrdinalIgnoreCase))
-                {
-                    return ServiceResult<User>.FromResult(user);
-                }
+                return ServiceResult<User>.FromResult(user);
             }
             return ServiceResult<User>.FromError("user has no org id or malformed");
         }
@@ -109,17 +121,12 @@ namespace B2CAuthZ.Admin
                 .Select(_options.UserFieldSelection)
                 .GetAsync();
 
-            if (user.AdditionalData == null || !user.AdditionalData.Any()) return null;
-            if (user.AdditionalData.ContainsKey(_options.OrgIdExtensionName))
+            if (user.VerifyAccess(_orgId, _options))
             {
-                var orgData = user.AdditionalData[_options.OrgIdExtensionName].ToString();
-                if (string.Equals(orgData, _orgId, StringComparison.OrdinalIgnoreCase))
-                {
-                    var results = await _graphClient.Users[userObjectId].AppRoleAssignments
-                        .Request()
-                        .GetAsync();
-                    return ServiceResult<IEnumerable<AppRoleAssignment>>.FromResult(results);
-                }
+                var results = await _graphClient.Users[userObjectId].AppRoleAssignments
+                      .Request()
+                      .GetAsync();
+                return ServiceResult<IEnumerable<AppRoleAssignment>>.FromResult(results);
             }
             return ServiceResult<IEnumerable<AppRoleAssignment>>.FromError("No roles found");
         }
@@ -135,7 +142,7 @@ namespace B2CAuthZ.Admin
               ;
             var user = await userRequest.GetAsync();
 
-            if (!user.AdditionalData.Any())  // no org, let's set a new one
+            if (user.AdditionalData == null || !user.AdditionalData.Any())  // no org, let's set a new one
             {
                 user.AdditionalData[_options.OrgIdExtensionName] = membership.OrgId;
                 user.AdditionalData[_options.OrgRoleExtensionName] = membership.Role;
@@ -190,63 +197,6 @@ namespace B2CAuthZ.Admin
         public async Task<ServiceResult<IEnumerable<OrganizationUser>>> SearchUser(string query)
         {
             throw new NotImplementedException();
-        }
-    }
-
-    public abstract class ServiceResult
-    {
-        public string Message { get; set; }
-        public bool Success { get; set; }
-        public Exception Exception { get; set; }
-    }
-
-    public class ServiceResult<T> : ServiceResult
-    {
-        public T Value { get; set; }
-        public ServiceResult() { }
-
-        public ServiceResult(T value)
-        {
-            Value = value;
-            Success = true;
-        }
-
-        public static ServiceResult<T> FromError(string error)
-        {
-            return new ServiceResult<T>()
-            {
-                Message = error,
-                Success = false,
-                Exception = new Exception(error)
-            };
-        }
-        public static ServiceResult<T> FromError(Exception ex)
-        {
-            return new ServiceResult<T>()
-            {
-                Message = ex.Message,
-                Success = false,
-                Exception = ex
-            };
-        }
-
-        public static ServiceResult<T> FromResult(T thing)
-        {
-            return new ServiceResult<T>(thing);
-        }
-        
-        public static ServiceResult<T> FromError(string message, T value)
-        {
-            var result = FromError(message);
-            result.Value = value;
-            return result;
-        }
-
-        public static ServiceResult<T> FromError(Exception ex, T value)
-        {
-            var result = FromError(ex);
-            result.Value = value;
-            return result;
         }
     }
 }
