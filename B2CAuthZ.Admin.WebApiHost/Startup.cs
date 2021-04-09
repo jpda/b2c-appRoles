@@ -25,7 +25,7 @@ namespace B2CAuthZ.Admin.WebApiHost
             services.AddApplicationInsightsTelemetry();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAdB2C"));
- 
+
             services.AddHttpContextAccessor(); // should already be here due to microsoft.identity.web above
             services.AddOptions<AzureAdAdminConfiguration>()
                 .Configure<IConfiguration>((opt, config) =>
@@ -79,28 +79,24 @@ namespace B2CAuthZ.Admin.WebApiHost
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger(x=>
-                    {
-                        x.SerializeAsV2 = true;
-                    }
-                );
-                app.UseSwaggerUI(c =>
+                app.UseCors("DevCorsPolicy");
+            }
+
+            app.UseSwagger(x =>
+                {
+                    // serializing as v2 for compat with swaxios codegen tool
+                    x.SerializeAsV2 = true;
+                });
+            app.UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint("/swagger/v1.0/swagger.json", "B2C Authorization Administration v1.0");
                     c.RoutePrefix = string.Empty;
                     c.DefaultModelExpandDepth(1);
                 });
-                app.UseCors("DevCorsPolicy");
-            }
-
             app.UseHttpsRedirection();
-
             app.UseRouting();
-
-
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
