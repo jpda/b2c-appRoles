@@ -9,7 +9,7 @@
         },
         "logLevel": {
             "default": "Error",
-            "B2CAuthZ.Runtime.FuncHost": "Information",
+            "B2CAuthZ.Runtime.FuncHost": "Debug",
             "Host": "Error"
         }
     },
