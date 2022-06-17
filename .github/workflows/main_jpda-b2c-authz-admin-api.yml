@@ -4,9 +4,9 @@
 name: Build and deploy - jpda-b2c-authz-admin-api
 
 on:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
   workflow_dispatch:
 
 jobs:
