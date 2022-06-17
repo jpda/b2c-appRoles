@@ -1,9 +1,9 @@
 <TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="jpdab2c.onmicrosoft.com" PolicyId="B2C_1A_AADCommonClaimsProvider" PublicPolicyUri="http://jpdab2c.onmicrosoft.com/B2C_1A_AADCommonClaimsProvider" TenantObjectId="0b6270a6-46b8-4c8b-8f45-265f396bb543">
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_AADCommonClaimsProvider" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_AADCommonClaimsProvider" TenantObjectId="0b6270a6-46b8-4c8b-8f45-265f396bb543">
   <!-- todo: update 'yourtenant' with your b2c tenant name -->
   <BasePolicy>
-    <TenantId>jpdab2c.onmicrosoft.com</TenantId>
+    <TenantId>b2xv.onmicrosoft.com</TenantId>
     <PolicyId>B2C_1A_TrustFrameworkExtensions</PolicyId>
   </BasePolicy>
   <BuildingBlocks>
@@ -77,7 +77,7 @@
           <Protocol Name="OpenIdConnect" />
           <Metadata>
             <!-- todo: add your AAD multitenant app id here, see https://docs.microsoft.com/en-us/azure/active-directory-b2c/identity-provider-azure-ad-multi-tenant-custom?tabs=applications -->
-            <Item Key="client_id">cc6d9ef5-f275-4b13-8d4e-15b8303c2415</Item>
+            <Item Key="client_id">9c77141c-5622-40bb-bbf9-2b70d2a3c655</Item>
             <Item Key="UsePolicyInRedirectUri">0</Item>
             <Item Key="METADATA">https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration</Item>
             <Item Key="response_types">code</Item>
@@ -147,7 +147,7 @@
         </TechnicalProfile>
       </TechnicalProfiles>
     </ClaimsProvider>
-    <ClaimsProvider>
+    <!--<ClaimsProvider>
       <Domain>github.com</Domain>
       <DisplayName>GitHub</DisplayName>
       <TechnicalProfiles>
@@ -162,7 +162,6 @@
             <Item Key="scope">user</Item>
             <Item Key="HttpBinding">POST</Item>
             <Item Key="UsePolicyInRedirectUri">0</Item>
-            <!-- todo: add your github client id -->
             <Item Key="client_id">cddc2cf7948b017a0f65</Item>
           </Metadata>
           <CryptographicKeys>
@@ -174,7 +173,7 @@
             <OutputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="given_name" />
             <OutputClaim ClaimTypeReferenceId="surname" PartnerClaimType="family_name" />
             <OutputClaim ClaimTypeReferenceId="displayName" PartnerClaimType="name" />
-            <OutputClaim ClaimTypeReferenceId="identityProvider" DefaultValue="google.com" />
+            <OutputClaim ClaimTypeReferenceId="identityProvider" DefaultValue="GitHub" />
             <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="socialIdpAuthentication" />
           </OutputClaims>
           <OutputClaimsTransformations>
@@ -186,7 +185,7 @@
           <UseTechnicalProfileForSessionManagement ReferenceId="SM-SocialLogin" />
         </TechnicalProfile>
       </TechnicalProfiles>
-    </ClaimsProvider>
+    </ClaimsProvider>-->
     <ClaimsProvider>
       <Domain>facebook.com</Domain>
       <DisplayName>Facebook</DisplayName>
@@ -237,7 +236,7 @@
       <DisplayName>Brutus ADFS</DisplayName>
       <TechnicalProfiles>
         <TechnicalProfile Id="BrutusADFS">
-          <DisplayName>Work or school account</DisplayName>
+          <DisplayName>ADFS</DisplayName>
           <Protocol Name="OpenIdConnect" />
           <Metadata>
             <!-- todo: add your ADFS client ID -->

@@ -1,0 +1,216 @@
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_SusiWithCA" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_SusiWithCA" TenantObjectId="0b6270a6-46b8-4c8b-8f45-265f396bb543">
+  <!-- todo: update 'yourtenant' with your b2c tenant name -->
+  <BasePolicy>
+    <TenantId>b2xv.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_ConditionalAccess</PolicyId>
+  </BasePolicy>
+  <UserJourneys>
+    <UserJourney Id="SignUpOrSignInWithCA">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.signuporsignin">
+          <ClaimsProviderSelections>
+            <ClaimsProviderSelection ValidationClaimsExchangeId="LocalAccountSigninEmailExchange" />
+          </ClaimsProviderSelections>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!-- Check if the user has selected to sign in using one of the social providers -->
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>objectId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="SignUpWithLogonEmailExchange" TechnicalProfileReferenceId="LocalAccountSignUpWithLogonEmail" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!-- For social IDP authentication, attempt to find the user account in the directory. -->
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>authenticationSource</Value>
+              <Value>socialIdpAuthentication</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="4" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>strongAuthenticationPhoneNumber-Exists</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="TwilioVerify-CaptureNewUserPhone" TechnicalProfileReferenceId="TwilioVerify-CapturePhoneNumber" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!-- if the user doesn't have a phone number, we need to capture it -->
+        <OrchestrationStep Order="5" Type="InvokeSubJourney">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>twilioVerify-NewPhoneEnteredIsValidated</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>twilioVerify-NewPhoneEnteredIsValidated</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <JourneyList>
+            <Candidate SubJourneyReferenceId="TwilioVerify-SendAndReceiveVerification" />
+          </JourneyList>
+        </OrchestrationStep>
+        <OrchestrationStep Order="6" Type="InvokeSubJourney">
+          <JourneyList>
+            <Candidate SubJourneyReferenceId="ConditionalAccess_Evaluation" />
+          </JourneyList>
+        </OrchestrationStep>
+        <OrchestrationStep Order="7" Type="InvokeSubJourney">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>CAChallengeIsMfa</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>CAChallengeIsMfa</Value>
+              <Value>False</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <JourneyList>
+            <Candidate SubJourneyReferenceId="TwilioVerify-SendAndReceiveVerification" />
+          </JourneyList>
+        </OrchestrationStep>
+        <OrchestrationStep Order="8" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>newPhoneNumberEntered</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserWriteWithObjectId" TechnicalProfileReferenceId="AAD-UserWritePhoneNumberUsingObjectId" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!-- invoke MFA if CA requires it -->
+        <OrchestrationStep Order="9" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>CAChallengeIsBlock</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>CAChallengeIsBlock</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="ShowBlockPage" TechnicalProfileReferenceId="ShowBlockPage" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!--If a user has reached this far that means a remediation was applied-->
+        <OrchestrationStep Order="10" Type="InvokeSubJourney">
+          <JourneyList>
+            <Candidate SubJourneyReferenceId="ConditionalAccess_Remediation" />
+          </JourneyList>
+        </OrchestrationStep>
+           <!-- FunctionGraph-GetAccessToken -->
+        <OrchestrationStep Order="11" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GetAuthZApiToken" TechnicalProfileReferenceId="FunctionGraph-GetAccessToken" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="12" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GetAuthzData" TechnicalProfileReferenceId="FunctionGraph-GetUserRoles" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="13" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+      </OrchestrationSteps>
+      <ClientDefinition ReferenceId="DefaultWeb" />
+    </UserJourney>
+  </UserJourneys>
+  <SubJourneys>
+    <SubJourney Id="TwilioVerify-SendAndReceiveVerification" Type="Call">
+      <OrchestrationSteps>
+        <!--MFA based on Conditional Access-->
+        <OrchestrationStep Order="1" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="TwilioVerify-SendVerification" TechnicalProfileReferenceId="REST-SendTwilioVerificationRequest" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="CA-TwilioVerify-CaptureUserCode" TechnicalProfileReferenceId="TwilioVerify-CaptureUserCode" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="CA-TwilioVerify-VerifyUserCode" TechnicalProfileReferenceId="REST-ValidateTwilioVerificationResponse" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+      </OrchestrationSteps>
+    </SubJourney>
+    <SubJourney Id="ConditionalAccess_Evaluation" Type="Call">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="ConditionalAccessEvaluation" TechnicalProfileReferenceId="ConditionalAccessEvaluation" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>conditionalAccessClaimCollection</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GenerateCAClaimFlags" TechnicalProfileReferenceId="GenerateCAClaimFlags" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+      </OrchestrationSteps>
+    </SubJourney>
+    <SubJourney Id="ConditionalAccess_Remediation" Type="Call">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>conditionalAccessClaimCollection</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="ConditionalAccessRemediation" TechnicalProfileReferenceId="ConditionalAccessRemediation" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+      </OrchestrationSteps>
+    </SubJourney>
+    <!--<SubJourney Id="CheckWhetherNeedToPerformMFA" Type="Call">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>needToPerformMfa</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GenerateNeedToPerformMFAFlag" TechnicalProfileReferenceId="GenerateNeedToPerformMFAFlag" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+      </OrchestrationSteps>
+    </SubJourney>-->
+  </SubJourneys>
+</TrustFrameworkPolicy>

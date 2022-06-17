@@ -1,0 +1,25 @@
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_TrustFrameworkExtensions" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_TrustFrameworkExtensions" TenantObjectId="0b6270a6-46b8-4c8b-8f45-265f396bb543">
+  <BasePolicy>
+    <TenantId>b2xv.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_UI</PolicyId>
+  </BasePolicy>
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>Local Account SignIn</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="login-NonInteractive">
+          <Metadata>
+            <Item Key="client_id">06c8fb12-7b5e-4b64-9b58-5211f1702f7c</Item>
+            <Item Key="IdTokenAudience">a55f2b9d-ced9-4cc5-b8ed-a5cf412047bd</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="client_id" DefaultValue="06c8fb12-7b5e-4b64-9b58-5211f1702f7c" />
+            <InputClaim ClaimTypeReferenceId="resource_id" PartnerClaimType="resource" DefaultValue="a55f2b9d-ced9-4cc5-b8ed-a5cf412047bd" />
+          </InputClaims>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+</TrustFrameworkPolicy>
