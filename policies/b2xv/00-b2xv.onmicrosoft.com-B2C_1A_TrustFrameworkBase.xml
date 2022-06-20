@@ -1,4 +1,4 @@
-<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_TrustFrameworkBase" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_TrustFrameworkBase" TenantObjectId="0b6270a6-46b8-4c8b-8f45-265f396bb543">
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_00-TrustFrameworkBase" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_00-TrustFrameworkBase">
   <BuildingBlocks>
     <ClaimsSchema>
       <!-- The ClaimsSchema is divided into three sections:

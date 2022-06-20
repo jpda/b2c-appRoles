@@ -1,7 +1,7 @@
-<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_HRD_signin" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_HRD_signin" DeploymentMode="Development" UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights" TenantObjectId="0b6270a6-46b8-4c8b-8f45-265f396bb543">
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_08-RP-HRD_signin" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_08-RP-HRD_signin" DeploymentMode="Development" UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
   <BasePolicy>
     <TenantId>b2xv.onmicrosoft.com</TenantId>
-    <PolicyId>B2C_1A_HRD_AADCommon</PolicyId>
+    <PolicyId>B2C_1A_07-HRD_Base</PolicyId>
   </BasePolicy>
   <UserJourneys>
     <UserJourney Id="B2C_HRD">
@@ -290,7 +290,7 @@
   <RelyingParty>
     <DefaultUserJourney ReferenceId="B2C_HRD_UserRealm" />
     <UserJourneyBehaviors>
-      <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="76a4fb8a-edde-4350-8929-cf738127b01e" DeveloperMode="true" ClientEnabled="false" ServerEnabled="true" TelemetryVersion="1.0.0" />
+      <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="f8efa7d8-2811-4cb9-bb15-4ad5ef5e2daf" DeveloperMode="true" ClientEnabled="false" ServerEnabled="true" TelemetryVersion="1.0.0" />
     </UserJourneyBehaviors>
     <TechnicalProfile Id="PolicyProfile">
       <DisplayName>PolicyProfile</DisplayName>
@@ -309,8 +309,8 @@
         <OutputClaim ClaimTypeReferenceId="idpObjectId" />
         <OutputClaim ClaimTypeReferenceId="tenantId" AlwaysUseDefaultValue="true" DefaultValue="{Policy:TenantObjectId}" />
         <OutputClaim ClaimTypeReferenceId="idpTenantId" />
-        <!-- <OutputClaim ClaimTypeReferenceId="identityProviderAccessToken" PartnerClaimType="idp_access_token" /> -->
-        <OutputClaim ClaimTypeReferenceId="identityProviderRefreshToken" PartnerClaimType="idp_refresh_token" />
+        <OutputClaim ClaimTypeReferenceId="identityProviderAccessToken" PartnerClaimType="idp_access_token" />
+        <!-- <OutputClaim ClaimTypeReferenceId="identityProviderRefreshToken" PartnerClaimType="idp_refresh_token" /> -->
       </OutputClaims>
       <SubjectNamingInfo ClaimType="sub" />
     </TechnicalProfile>

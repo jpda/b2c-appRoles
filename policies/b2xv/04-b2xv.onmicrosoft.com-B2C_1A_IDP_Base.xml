@@ -1,0 +1,37 @@
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_04-IDP_Base" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_04-IDP_Base">
+  <BasePolicy>
+    <TenantId>b2xv.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_03-ConditionalAccess</PolicyId>
+  </BasePolicy>
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <ClaimType Id="identityProviderAccessToken">
+        <DisplayName>Identity Provider Access Token</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>Stores the access token of the identity provider.</AdminHelpText>
+      </ClaimType>
+      <ClaimType Id="identityProviderRefreshToken">
+        <DisplayName>Identity Provider Refresh Token</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>Stores the refresh token of the identity provider.</AdminHelpText>
+      </ClaimType>
+      <ClaimType Id="avatar">
+        <DisplayName>Avatar</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText />
+      </ClaimType>
+      <ClaimType Id="idpObjectId">
+        <DisplayName>Issuer Object ID</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText />
+      </ClaimType>
+      <ClaimType Id="idpTenantId">
+        <DisplayName>Issuer Tenant ID</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText />
+      </ClaimType>
+    </ClaimsSchema>
+  </BuildingBlocks>
+</TrustFrameworkPolicy>

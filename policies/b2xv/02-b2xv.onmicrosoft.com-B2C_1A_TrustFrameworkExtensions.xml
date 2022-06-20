@@ -1,9 +1,9 @@
 <TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_TrustFrameworkExtensions" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_TrustFrameworkExtensions" TenantObjectId="0b6270a6-46b8-4c8b-8f45-265f396bb543">
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_02-TrustFrameworkExtensions" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_02-TrustFrameworkExtensions">
   <BasePolicy>
     <TenantId>b2xv.onmicrosoft.com</TenantId>
-    <PolicyId>B2C_1A_UI</PolicyId>
+    <PolicyId>B2C_1A_01-UI</PolicyId>
   </BasePolicy>
   <ClaimsProviders>
     <ClaimsProvider>

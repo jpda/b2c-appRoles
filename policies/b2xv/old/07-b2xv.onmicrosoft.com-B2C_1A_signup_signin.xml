@@ -110,7 +110,7 @@
     <!-- <DefaultUserJourney ReferenceId="SignUpOrSignIn-AADCommon" /> -->
     <DefaultUserJourney ReferenceId="SignUpOrSignInWithCA" />
     <UserJourneyBehaviors>
-      <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="76a4fb8a-edde-4350-8929-cf738127b01e" DeveloperMode="true" ClientEnabled="false" ServerEnabled="true" TelemetryVersion="1.0.0" />
+      <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="f8efa7d8-2811-4cb9-bb15-4ad5ef5e2daf" DeveloperMode="true" ClientEnabled="false" ServerEnabled="true" TelemetryVersion="1.0.0" />
     </UserJourneyBehaviors>
     <TechnicalProfile Id="PolicyProfile">
       <DisplayName>PolicyProfile</DisplayName>

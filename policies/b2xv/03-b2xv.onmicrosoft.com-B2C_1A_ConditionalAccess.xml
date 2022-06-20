@@ -1,8 +1,8 @@
-<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_ConditionalAccess" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_ConditionalAccess" TenantObjectId="0b6270a6-46b8-4c8b-8f45-265f396bb543">
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_03-ConditionalAccess" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_03-ConditionalAccess">
   <!-- todo: update 'yourtenant' with your b2c tenant name -->
   <BasePolicy>
     <TenantId>b2xv.onmicrosoft.com</TenantId>
-    <PolicyId>B2C_1A_AuthZAppRoles</PolicyId>
+    <PolicyId>B2C_1A_02-TrustFrameworkExtensions</PolicyId>
   </BasePolicy>
   <BuildingBlocks>
     <ClaimsSchema>

@@ -1,0 +1,87 @@
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_06-Authz_Base" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_06-AuthZ_Base">
+  <BasePolicy>
+    <TenantId>b2xv.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_05-IDPs</PolicyId>
+  </BasePolicy>
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <!-- Roles -->
+      <ClaimType Id="roleString">
+        <DisplayName>User roles</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText />
+      </ClaimType>
+      <ClaimType Id="roles">
+        <DisplayName>Consolidated roles collection</DisplayName>
+        <DataType>stringCollection</DataType>
+        <UserHelpText />
+      </ClaimType>
+      <ClaimType Id="serviceRoles">
+        <DisplayName>Roles from application database</DisplayName>
+        <DataType>stringCollection</DataType>
+        <UserHelpText />
+      </ClaimType>
+    </ClaimsSchema>
+    <ClaimsTransformations>
+      <ClaimsTransformation Id="ConvertRolesCollectionToDelimtedString" TransformationMethod="StringJoin">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="roles" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter DataType="string" Id="delimiter" Value="," />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="roleString" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+    </ClaimsTransformations>
+  </BuildingBlocks>
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <Domain>aad</Domain>
+      <DisplayName>Common AAD</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="Common-AAD">
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="roles" PartnerClaimType="roles" />
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="ConvertRolesCollectionToDelimtedString" />
+          </OutputClaimsTransformations>
+          <!-- <UseTechnicalProfileForSessionManagement ReferenceId="SM-SocialLogin" /> -->
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+    <ClaimsProvider>
+      <DisplayName>REST APIs</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="ApplicationAuthZService">
+          <DisplayName>Application authorization database</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://b2c-authz.azurewebsites.net/api/get-claims?code=nJnY00CIUVYkiFT7SdWt1fMUwIouRmYZjMUFTm5lTXGSdWedrIwvUQ==</Item>
+            <Item Key="SendClaimsIn">Body</Item>
+            <!-- Set AuthenticationType to Basic or ClientCertificate in production environments -->
+            <Item Key="AuthenticationType">None</Item>
+            <!-- REMOVE the following line in production environments -->
+            <Item Key="AllowInsecureAuthInProduction">true</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="oid" />
+            <InputClaim ClaimTypeReferenceId="newUser" />
+            <InputClaim ClaimTypeReferenceId="signInNames.emailAddress" PartnerClaimType="email" />
+            <InputClaim ClaimTypeReferenceId="idpTenantId" />
+            <InputClaim ClaimTypeReferenceId="identityProvider" />
+            <InputClaim ClaimTypeReferenceId="issuerUserId" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="roles" />
+          </OutputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+</TrustFrameworkPolicy>
