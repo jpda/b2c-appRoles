@@ -2,9 +2,9 @@
     "azureFunctions.projectSubpath": "B2CAuthZ.Admin.FuncHost",
     "aadb2c.graph.clientid": "59647294-9a6c-4fe4-b260-75b48d96b957",
     "aadb2c.graph.replaceSamplesYourTenantWith": "b2xv",
-    "aadb2c.previewUrl": "https://login.b2x.studio/login.b2x.studio/{policy}/oauth2/v2.0/authorize?client_id=8c123e96-0422-41e9-a196-461ae17035ce&nonce=defaultNonce&redirect_uri=https%3A%2F%2Fjwt.ms&scope=openid&response_type=id_token&prompt=login",
+    "aadb2c.previewUrl": "https://login.b2x.studio/b2x.studio/{policy}/oauth2/v2.0/authorize?client_id=8c123e96-0422-41e9-a196-461ae17035ce&nonce=defaultNonce&redirect_uri=https%3A%2F%2Fjwt.ms&scope=openid&response_type=id_token&prompt=login",
     "environment.default": "b2xv",
     "aadb2c.ai.id": "78d15884-45a5-4192-a6b1-0282d1d9ca6d",
-    "aadb2c.ai.key": "gpf1h5pabtrmw4ascsqxakwbxnebaydcie3n8d3a",
+    "aadb2c.ai.key": "",
     "aadb2c.ai.timespan": 1
 }
