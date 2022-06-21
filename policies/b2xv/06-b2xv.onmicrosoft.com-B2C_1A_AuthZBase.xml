@@ -39,6 +39,7 @@
     </ClaimsTransformations>
   </BuildingBlocks>
   <ClaimsProviders>
+  <!-- Override to add the roles collection and the transformation of the collection from upstream AAD -->
     <ClaimsProvider>
       <Domain>aad</Domain>
       <DisplayName>Common AAD</DisplayName>
@@ -54,6 +55,9 @@
         </TechnicalProfile>
       </TechnicalProfiles>
     </ClaimsProvider>
+    <!-- External API for authorization roles; this could be an app database or anything else,
+         as long as it's accessible over the internet B2C can get to it. Sample in repo
+    -->
     <ClaimsProvider>
       <DisplayName>REST APIs</DisplayName>
       <TechnicalProfiles>

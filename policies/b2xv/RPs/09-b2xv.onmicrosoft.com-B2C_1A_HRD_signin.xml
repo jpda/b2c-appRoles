@@ -1,7 +1,7 @@
-<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_08-RP-HRD_signin" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_08-RP-HRD_signin" DeploymentMode="Development" UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_00-RP-HRD_AuthZ_signin" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_00-RP-HRD_AuthZ_signin" DeploymentMode="Development" UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
   <BasePolicy>
     <TenantId>b2xv.onmicrosoft.com</TenantId>
-    <PolicyId>B2C_1A_07-HRD_Base</PolicyId>
+    <PolicyId>B2C_1A_08-AuthZAppRoles</PolicyId>
   </BasePolicy>
   <UserJourneys>
     <UserJourney Id="B2C_HRD">
@@ -282,7 +282,19 @@
             <ClaimsExchange Id="AADUserWrite" TechnicalProfileReferenceId="AAD-UserWriteUsingAlternativeSecurityId" />
           </ClaimsExchanges>
         </OrchestrationStep>
-        <OrchestrationStep Order="11" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+        <!-- authz  -->
+                <!-- FunctionGraph-GetAccessToken -->
+        <OrchestrationStep Order="11" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GetAuthZApiToken" TechnicalProfileReferenceId="FunctionGraph-GetAccessToken" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="12" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GetAuthzData" TechnicalProfileReferenceId="FunctionGraph-GetUserRoles" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="13" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
       </OrchestrationSteps>
       <ClientDefinition ReferenceId="DefaultWeb" />
     </UserJourney>
