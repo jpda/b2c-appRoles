@@ -118,7 +118,7 @@
     </ClaimsTransformations>
   </BuildingBlocks>
   <ClaimsProviders>
-    <!-- <ClaimsProvider>
+    <ClaimsProvider>
       <Domain>aad</Domain>
       <DisplayName>Common AAD</DisplayName>
       <TechnicalProfiles>
@@ -129,7 +129,7 @@
           </InputClaims>
         </TechnicalProfile>
       </TechnicalProfiles>
-    </ClaimsProvider> -->
+    </ClaimsProvider>
     <!--HRD stuff modified from https://github.com/ahelland/Identity-CodeSamples-v2-->
     <ClaimsProvider>
       <!-- Used to acquire email address from user for subsequent HRD lookup -->
@@ -214,16 +214,6 @@
     <ClaimsProvider>
       <DisplayName>Local Account SignIn</DisplayName>
       <TechnicalProfiles>
-        <!-- <TechnicalProfile Id="login-NonInteractive">
-          <Metadata>
-            <Item Key="client_id">c229c0b7-c6d1-401c-a3ca-0e4fbc1da831</Item>
-            <Item Key="IdTokenAudience">e7f1755c-8fee-4d52-8a71-c4718319cdc8</Item>
-          </Metadata>
-          <InputClaims>
-            <InputClaim ClaimTypeReferenceId="client_id" DefaultValue="c229c0b7-c6d1-401c-a3ca-0e4fbc1da831" />
-            <InputClaim ClaimTypeReferenceId="resource_id" PartnerClaimType="resource" DefaultValue="e7f1755c-8fee-4d52-8a71-c4718319cdc8" />
-          </InputClaims>
-        </TechnicalProfile> -->
         <TechnicalProfile Id="SelfAsserted-HRD">
           <DisplayName>Local Account Signin</DisplayName>
           <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
