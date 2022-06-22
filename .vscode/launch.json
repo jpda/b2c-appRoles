@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/B2CAuthZ.Admin.WebApiHost/bin/Debug/netcoreapp3.1/B2CAuthZ.Admin.WebApiHost.dll",
+            "program": "${workspaceFolder}/B2CAuthZ.Admin.WebApiHost/bin/Debug/net6.0/B2CAuthZ.Admin.WebApiHost.dll",
             "args": [],
             "cwd": "${workspaceFolder}/B2CAuthZ.Admin.WebApiHost",
             "stopAtEntry": false,
