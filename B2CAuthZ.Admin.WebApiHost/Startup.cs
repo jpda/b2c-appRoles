@@ -34,9 +34,8 @@ namespace B2CAuthZ.Admin.WebApiHost
                 });
             services.AddSingleton<IAuthenticationProvider, MsalTokenProvider>();
 
-            // todo: you gotta be kidding me;
-            // this is for GraphServiceClient's init, which expects a base url as string o_O
-            services.AddSingleton<string>("https://graph.microsoft.com/v1.0/");
+            services.AddSingleton<TokenCredentialAuthProvider>();
+
             services.AddSingleton<GraphServiceClient>();
             services.AddOptions<OrganizationOptions>()
                 .Configure<IConfiguration>((opt, config) =>
@@ -50,6 +49,7 @@ namespace B2CAuthZ.Admin.WebApiHost
 
             services.AddControllers().AddJsonOptions(x =>
             {
+                
                 // used to keep graph objects small
                 x.JsonSerializerOptions.IgnoreNullValues = true;
                 x.JsonSerializerOptions.MaxDepth = 5;

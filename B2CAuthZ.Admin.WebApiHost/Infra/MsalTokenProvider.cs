@@ -13,6 +13,10 @@ public class AzureAdAdminConfiguration
     public string Scopes { get; set; }
 }
 
+public class ClientCredentialProvider {
+    
+}
+
 // msal token provider for graph - note that we access graph here as the application directly, not as users
 // because of this, we do not go through the B2C authority, we use the normal AAD authority
 // remember - this is a privileged account for calling graph - this API **must** ensure all calls are valid
