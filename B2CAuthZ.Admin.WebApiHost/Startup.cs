@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Microsoft.Graph;
+using Azure.Identity;
 
 namespace B2CAuthZ.Admin.WebApiHost
 {
@@ -32,11 +33,24 @@ namespace B2CAuthZ.Admin.WebApiHost
                 {
                     config.GetSection("AzureAdDirectoryAdmin").Bind(opt);
                 });
-            services.AddSingleton<IAuthenticationProvider, MsalTokenProvider>();
+            // services.AddSingleton<IAuthenticationProvider, MsalTokenProvider>();
+            // services.AddSingleton<TokenCredentialAuthProvider>();
 
-            services.AddSingleton<TokenCredentialAuthProvider>();
+            // services.AddSingleton<Azure.Core.TokenCredential>(a =>
+            // {
+            //     return new Azure.Identity.ClientSecretCredential(
+            //         Configuration.GetValue<string>("AzureAdDirectoryAdmin:TenantId"),
+            //         Configuration.GetValue<string>("AzureAdDirectoryAdmin:ClientId"),
+            //         Configuration.GetValue<string>("AzureAdDirectoryAdmin:ClientSecret"));
+            // });
+            services.AddSingleton<GraphServiceClient>(sc =>
+            {
+                return new GraphServiceClient(new Azure.Identity.ClientSecretCredential(
+                    Configuration.GetValue<string>("AzureAdDirectoryAdmin:TenantId"),
+                    Configuration.GetValue<string>("AzureAdDirectoryAdmin:ClientId"),
+                    Configuration.GetValue<string>("AzureAdDirectoryAdmin:ClientSecret")));
+            });
 
-            services.AddSingleton<GraphServiceClient>();
             services.AddOptions<OrganizationOptions>()
                 .Configure<IConfiguration>((opt, config) =>
                 {
@@ -49,7 +63,7 @@ namespace B2CAuthZ.Admin.WebApiHost
 
             services.AddControllers().AddJsonOptions(x =>
             {
-                
+
                 // used to keep graph objects small
                 x.JsonSerializerOptions.IgnoreNullValues = true;
                 x.JsonSerializerOptions.MaxDepth = 5;
