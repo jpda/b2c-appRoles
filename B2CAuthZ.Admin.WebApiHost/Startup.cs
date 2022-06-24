@@ -47,7 +47,7 @@ namespace B2CAuthZ.Admin.WebApiHost
 
             services.AddOptions<SwaggerUIClientAuthOptions>().Configure<IConfiguration>((opt, config) =>
             {
-                config.GetSection("SwaggerUIClientAuth").Bind(opt);
+                config.GetSection("SwaggerUIClientAuthentication").Bind(opt);
             });
 
             services.AddOptions<OrganizationOptions>().Configure<IConfiguration>((opt, config) =>
