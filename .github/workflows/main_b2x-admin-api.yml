@@ -1,0 +1,25 @@
+name: build b2x-admin api
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Azure Container Registry Login 
+        uses: Azure/docker-login@v1 
+        with:
+        login-server: b2xve.azurecr.io
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }} 
+
+    - name: Build and Push the Docker image 
+      run:  | 
+        docker build . -t b2xve.azurecr.io/b2x/admin/api:${{ github.run_id }}
+        docker push b2xve.azurecr.io/b2x/admin/api:${{ github.run_id }}
