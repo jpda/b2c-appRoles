@@ -100,7 +100,7 @@ namespace B2CAuthZ.Admin.WebApiHost
                     c.SwaggerEndpoint("swagger/v1.0/swagger.json", "B2X Organization & Authorization Administration v1.0");
                     c.RoutePrefix = string.Empty;
                     c.DefaultModelExpandDepth(1);
-                    c.OAuthClientId(Configuration.GetValue<string>("SwaggerUIClientAuth:ClientId"));
+                    c.OAuthClientId(Configuration.GetValue<string>("SwaggerUIClientAuthentication:ClientId"));
                     c.OAuthScopes();//Configuration.GetValue<string>("SwaggerUIClientAuth:ClientId"));
                     //c.OAuth2RedirectUrl(Configuration.GetValue<string>());
                     //c.OAuthClientSecret(Configuration.GetValue<string>("AzureAdB2CSwaggerUIClient:ClientId"));
