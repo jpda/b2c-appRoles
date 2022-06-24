@@ -23,19 +23,11 @@ namespace B2CAuthZ.Admin.WebApiHost
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddApplicationInsightsTelemetry();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApi(Configuration.GetSection("ApiAuthorization"));
-
-            // services.AddHttpContextAccessor(); // should already be here due to microsoft.identity.web above
-            // services.AddOptions<AzureAdAdminConfiguration>()
-            //     .Configure<IConfiguration>((opt, config) =>
-            //     {
-            //         config.GetSection("AzureAdDirectoryAdmin").Bind(opt);
-            //     });
 
             services.AddSingleton<GraphServiceClient>(sc =>
             {
@@ -85,7 +77,6 @@ namespace B2CAuthZ.Admin.WebApiHost
             });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -101,9 +92,7 @@ namespace B2CAuthZ.Admin.WebApiHost
                     c.RoutePrefix = string.Empty;
                     c.DefaultModelExpandDepth(1);
                     c.OAuthClientId(Configuration.GetValue<string>("SwaggerUIClientAuthentication:ClientId"));
-                    c.OAuthScopes();//Configuration.GetValue<string>("SwaggerUIClientAuth:ClientId"));
-                    //c.OAuth2RedirectUrl(Configuration.GetValue<string>());
-                    //c.OAuthClientSecret(Configuration.GetValue<string>("AzureAdB2CSwaggerUIClient:ClientId"));
+                    c.OAuthScopes();
                     c.OAuthUsePkce();
 
                 });

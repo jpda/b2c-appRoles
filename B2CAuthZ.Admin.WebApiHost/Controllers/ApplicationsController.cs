@@ -16,12 +16,10 @@ namespace B2CAuthZ.Admin.WebApiHost.Controllers
     [Route("v{v:apiVersion}")]
     public class ApplicationsController : ControllerBase
     {
-        private readonly ILogger<UsersController> _logger;
         private readonly IApplicationRepository _appsRepo;
 
-        public ApplicationsController(ILogger<UsersController> logger, IApplicationRepository appsRepo)
+        public ApplicationsController(IApplicationRepository appsRepo)
         {
-            _logger = logger;
             _appsRepo = appsRepo;
         }
 

@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Identity.Web.Resource;
-//using B2CAuthZ.Admin;
 
 namespace B2CAuthZ.Admin.WebApiHost.Controllers
 {
@@ -19,12 +18,10 @@ namespace B2CAuthZ.Admin.WebApiHost.Controllers
     [Route("v{v:apiVersion}/[controller]")]
     public class UsersController : ControllerBase
     {
-        private readonly ILogger<UsersController> _logger;
         private readonly IUserRepository _userRepo;
 
-        public UsersController(ILogger<UsersController> logger, IUserRepository userRepo)
+        public UsersController(IUserRepository userRepo)
         {
-            _logger = logger;
             _userRepo = userRepo;
         }
 
@@ -55,7 +52,7 @@ namespace B2CAuthZ.Admin.WebApiHost.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetUserAppRoleAssignments(Guid userId) => await GenerateReturn(() => _userRepo.GetUserAppRoleAssignments(userId.ToString()));
 
-        private async Task<IActionResult> GenerateReturn<T>(Func<Task<ServiceResult<T>>> work)
+        private static async Task<IActionResult> GenerateReturn<T>(Func<Task<ServiceResult<T>>> work)
         {
             var result = await work();
             if (result.Success)

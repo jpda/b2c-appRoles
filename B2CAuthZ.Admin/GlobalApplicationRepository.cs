@@ -14,9 +14,20 @@ namespace B2CAuthZ.Admin
             _graphClient = client;
         }
 
-        public Task<AppRoleAssignment> AssignAppRole(Guid principalId, Guid resourceId, Guid appRoleId)
+        public async Task<AppRoleAssignment> AssignAppRole(Guid principalId, Guid resourceId, Guid appRoleId)
         {
-            throw new NotImplementedException();
+
+            var principal = await _graphClient.Users[principalId.ToString()]
+                .Request()
+                .GetAsync();
+
+            var assignment = new AppRoleAssignment()
+            {
+                ResourceId = resourceId,
+                PrincipalId = Guid.Parse(principal.Id),
+                AppRoleId = appRoleId
+            };
+            return await _graphClient.ServicePrincipals[resourceId.ToString()].AppRoleAssignedTo.Request().AddAsync(assignment);
         }
 
         public Task<AppRoleAssignment> AssignAppRole(AppRoleAssignment request)

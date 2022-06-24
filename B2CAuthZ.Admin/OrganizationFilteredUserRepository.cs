@@ -137,9 +137,9 @@ namespace B2CAuthZ.Admin
 
             // get the target user
             var userRequest = _graphClient.Users[membership.UserId]
-              .Request()
-              .Select(_options.UserFieldSelection)
-              ;
+                .Request()
+                .Select(_options.UserFieldSelection)
+                ;
             var user = await userRequest.GetAsync();
 
             if (user.AdditionalData == null || !user.AdditionalData.Any())  // no org, let's set a new one
@@ -194,7 +194,7 @@ namespace B2CAuthZ.Admin
             return ServiceResult<OrganizationUser>.FromError(user.Exception);
         }
 
-        public async Task<ServiceResult<IEnumerable<OrganizationUser>>> SearchUser(string query)
+        public Task<ServiceResult<IEnumerable<OrganizationUser>>> SearchUser(string query)
         {
             throw new NotImplementedException();
         }
