@@ -1,4 +1,6 @@
-# Using App Roles in Azure AD B2C
+[![build b2x-admin api](https://github.com/jpda/b2c-appRoles/actions/workflows/main_b2x-admin-api.yml/badge.svg)](https://github.com/jpda/b2c-appRoles/actions/workflows/main_b2x-admin-api.yml)
+
+# Delegated organization & authorization management for B2C
 
 A project for building a basic role-based authorization system using existing Azure AD primitives. Storage and top-level administration is handled via the Azure AD AppRole system. At sign-in time, roles assignments are fetched via Graph and pushed into the claimset before being sent back to the client. This also provides facilities for delegating user adminstration to customer administrators. Contributions are welcome!
 
