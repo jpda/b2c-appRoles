@@ -1,4 +1,6 @@
-<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_00-RP-HRD_AuthZ_signin" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_00-RP-HRD_AuthZ_signin" DeploymentMode="Development" UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_00-RP-HRD_AuthZ_signin" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_00-RP-HRD_AuthZ_signin" DeploymentMode="Development" UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
   <BasePolicy>
     <TenantId>b2xv.onmicrosoft.com</TenantId>
     <PolicyId>B2C_1A_08-AuthZAppRoles</PolicyId>
@@ -283,7 +285,7 @@
           </ClaimsExchanges>
         </OrchestrationStep>
         <!-- authz  -->
-                <!-- FunctionGraph-GetAccessToken -->
+        <!-- FunctionGraph-GetAccessToken -->
         <OrchestrationStep Order="11" Type="ClaimsExchange">
           <ClaimsExchanges>
             <ClaimsExchange Id="GetAuthZApiToken" TechnicalProfileReferenceId="FunctionGraph-GetAccessToken" />
@@ -317,11 +319,12 @@
         <OutputClaim ClaimTypeReferenceId="identityProvider" />
         <OutputClaim ClaimTypeReferenceId="avatar" />
         <OutputClaim ClaimTypeReferenceId="newUser" />
+        <OutputClaim ClaimTypeReferenceId="extension_OrgId" PartnerClaimType="b2x_orgid" />
         <OutputClaim ClaimTypeReferenceId="roles" />
         <OutputClaim ClaimTypeReferenceId="idpObjectId" />
         <OutputClaim ClaimTypeReferenceId="tenantId" AlwaysUseDefaultValue="true" DefaultValue="{Policy:TenantObjectId}" />
         <OutputClaim ClaimTypeReferenceId="idpTenantId" />
-        <OutputClaim ClaimTypeReferenceId="identityProviderAccessToken" PartnerClaimType="idp_access_token" />
+        <!-- <OutputClaim ClaimTypeReferenceId="identityProviderAccessToken" PartnerClaimType="idp_access_token" /> -->
         <!-- <OutputClaim ClaimTypeReferenceId="identityProviderRefreshToken" PartnerClaimType="idp_refresh_token" /> -->
       </OutputClaims>
       <SubjectNamingInfo ClaimType="sub" />

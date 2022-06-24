@@ -1,4 +1,6 @@
-<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_00-TrustFrameworkBase" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_00-TrustFrameworkBase">
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_00-TrustFrameworkBase" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_00-TrustFrameworkBase">
   <BuildingBlocks>
     <ClaimsSchema>
       <!-- The ClaimsSchema is divided into three sections:
@@ -503,7 +505,7 @@
           <DisplayName>Azure Active Directory</DisplayName>
           <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
           <Metadata>
-          <Item Key="ApplicationObjectId">9cdb427e-5223-4584-95de-51bfa0566b83</Item>
+            <Item Key="ApplicationObjectId">9cdb427e-5223-4584-95de-51bfa0566b83</Item>
             <Item Key="ClientId">381fa8c2-9179-4d49-91e3-a7545fd19a2d</Item>
             <!-- This is the "Object ID" from the "b2c-extensions-app"-->
             <!--This is the "Application ID" from the "b2c-extensions-app"-->

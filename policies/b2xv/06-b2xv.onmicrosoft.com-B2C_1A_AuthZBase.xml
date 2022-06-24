@@ -24,7 +24,7 @@
         <UserHelpText />
       </ClaimType>
     </ClaimsSchema>
-    <ClaimsTransformations>
+    <!-- <ClaimsTransformations>
       <ClaimsTransformation Id="ConvertRolesCollectionToDelimtedString" TransformationMethod="StringJoin">
         <InputClaims>
           <InputClaim ClaimTypeReferenceId="roles" TransformationClaimType="inputClaim" />
@@ -36,7 +36,7 @@
           <OutputClaim ClaimTypeReferenceId="roleString" TransformationClaimType="outputClaim" />
         </OutputClaims>
       </ClaimsTransformation>
-    </ClaimsTransformations>
+    </ClaimsTransformations> -->
   </BuildingBlocks>
   <ClaimsProviders>
   <!-- Override to add the roles collection and the transformation of the collection from upstream AAD -->
@@ -48,13 +48,13 @@
           <OutputClaims>
             <OutputClaim ClaimTypeReferenceId="roles" PartnerClaimType="roles" />
           </OutputClaims>
-          <OutputClaimsTransformations>
+          <!-- <OutputClaimsTransformations>
             <OutputClaimsTransformation ReferenceId="ConvertRolesCollectionToDelimtedString" />
-          </OutputClaimsTransformations>
+          </OutputClaimsTransformations> -->
           <!-- <UseTechnicalProfileForSessionManagement ReferenceId="SM-SocialLogin" /> -->
         </TechnicalProfile>
       </TechnicalProfiles>
-    </ClaimsProvider>
+    </ClaimsProvider> 
     <!-- External API for authorization roles; this could be an app database or anything else,
          as long as it's accessible over the internet B2C can get to it. Sample in repo
     -->

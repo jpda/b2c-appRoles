@@ -5,7 +5,67 @@
     <TenantId>b2xv.onmicrosoft.com</TenantId>
     <PolicyId>B2C_1A_01-UI</PolicyId>
   </BasePolicy>
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <ClaimType Id="extension_OrgId">
+        <DisplayName>Home organization</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>Your organization ID</UserHelpText>
+        <UserInputType>TextBox</UserInputType>
+      </ClaimType>
+    </ClaimsSchema>
+  </BuildingBlocks>
   <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>Azure Active Directory</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="AAD-Common">
+          <Metadata>
+            <!--Insert b2c-extensions-app application ID here, for example: 11111111-1111-1111-1111-111111111111-->
+            <Item Key="ClientId">381fa8c2-9179-4d49-91e3-a7545fd19a2d</Item>
+            <!--Insert b2c-extensions-app application ObjectId here, for example: 22222222-2222-2222-2222-222222222222-->
+            <Item Key="ApplicationObjectId">9cdb427e-5223-4584-95de-51bfa0566b83</Item>
+          </Metadata>
+        </TechnicalProfile>
+        <TechnicalProfile Id="AAD-UserReadUsingObjectId">
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="extension_OrgId" />
+          </OutputClaims>
+          <!-- <IncludeTechnicalProfile ReferenceId="AAD-Common" /> -->
+        </TechnicalProfile>
+        <TechnicalProfile Id="AAD-UserWriteUsingAlternativeSecurityId">
+          <PersistedClaims>
+            <PersistedClaim ClaimTypeReferenceId="extension_OrgId" />
+          </PersistedClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="extension_OrgId" />
+          </OutputClaims>
+          <!-- <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" /> -->
+        </TechnicalProfile>
+        <TechnicalProfile Id="AAD-UserReadUsingAlternativeSecurityId">
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="extension_OrgId" />
+          </OutputClaims>
+          <!-- <IncludeTechnicalProfile ReferenceId="AAD-Common" /> -->
+        </TechnicalProfile>
+        <TechnicalProfile Id="AAD-UserWriteUsingLogonEmail">
+          <!-- <PersistedClaims>
+            <PersistedClaim ClaimTypeReferenceId="extension_OrgId" />
+          </PersistedClaims> -->
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="extension_OrgId" />
+          </OutputClaims>
+          <!-- <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" /> -->
+        </TechnicalProfile>
+        <TechnicalProfile Id="AAD-UserReadUsingEmailAddress">
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="extension_OrgId" />
+          </OutputClaims>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
     <ClaimsProvider>
       <DisplayName>Local Account SignIn</DisplayName>
       <TechnicalProfiles>

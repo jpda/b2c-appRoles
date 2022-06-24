@@ -1,4 +1,6 @@
-<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_05-IDPs" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_05-IDPs">
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="b2xv.onmicrosoft.com" PolicyId="B2C_1A_05-IDPs" PublicPolicyUri="http://b2xv.onmicrosoft.com/B2C_1A_05-IDPs">
   <BasePolicy>
     <TenantId>b2xv.onmicrosoft.com</TenantId>
     <PolicyId>B2C_1A_04-IDP_Base</PolicyId>
@@ -25,10 +27,6 @@
           <CryptographicKeys>
             <Key Id="client_secret" StorageReferenceId="B2C_1A_AADAppSecret" />
           </CryptographicKeys>
-          <InputClaims>
-            <!-- <InputClaim ClaimTypeReferenceId="loginHint" PartnerClaimType="login_hint" DefaultValue="{OIDC:LoginHint}" />
-            <InputClaim ClaimTypeReferenceId="hrd_InternalLoginHint" PartnerClaimType="login_hint" /> -->
-          </InputClaims>
           <OutputClaims>
             <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="socialIdpAuthentication" />
             <OutputClaim ClaimTypeReferenceId="identityProvider" PartnerClaimType="iss" />
@@ -38,8 +36,8 @@
             <OutputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="given_name" />
             <OutputClaim ClaimTypeReferenceId="surName" PartnerClaimType="family_name" />
             <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="unique_name" />
-            <!-- <OutputClaim ClaimTypeReferenceId="roles" PartnerClaimType="roles" /> -->
             <OutputClaim ClaimTypeReferenceId="idpTenantId" PartnerClaimType="tid" />
+            <OutputClaim ClaimTypeReferenceId="extension_OrgId" PartnerClaimType="tid"/>
             <OutputClaim ClaimTypeReferenceId="identityProviderAccessToken" PartnerClaimType="{oauth2:access_token}" />
             <OutputClaim ClaimTypeReferenceId="identityProviderRefreshToken" PartnerClaimType="{oauth2:refresh_token}" />
           </OutputClaims>
@@ -48,7 +46,6 @@
             <OutputClaimsTransformation ReferenceId="CreateUserPrincipalName" />
             <OutputClaimsTransformation ReferenceId="CreateAlternativeSecurityId" />
             <OutputClaimsTransformation ReferenceId="CreateSubjectClaimFromAlternativeSecurityId" />
-            <!-- <OutputClaimsTransformation ReferenceId="ConvertRolesCollectionToDelimtedString" /> -->
           </OutputClaimsTransformations>
           <UseTechnicalProfileForSessionManagement ReferenceId="SM-SocialLogin" />
         </TechnicalProfile>
