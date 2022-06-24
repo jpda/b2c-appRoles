@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web.Resource;
@@ -45,31 +48,21 @@ namespace B2CAuthZ.Admin.WebApiHost
 
     public class ConfigureSwaggerGenOptions : IConfigureOptions<SwaggerGenOptions>
     {
+        private readonly IApiVersionDescriptionProvider _provider;
         private readonly SwaggerUIClientAuthOptions _swaggerUIClientAuthOptions;
-        public ConfigureSwaggerGenOptions(IOptions<SwaggerUIClientAuthOptions> authOptions)
+        public ConfigureSwaggerGenOptions(IOptions<SwaggerUIClientAuthOptions> authOptions, IApiVersionDescriptionProvider provider)
         {
+            _provider = provider;
             _swaggerUIClientAuthOptions = authOptions.Value;
         }
 
         public void Configure(SwaggerGenOptions options)
         {
-            options.SwaggerDoc("v1.0", new OpenApiInfo
+            foreach (var description in _provider.ApiVersionDescriptions)
             {
-                Title = "B2X Organization & Authorization Administration",
-                Version = "v1.0",
-                Description = "Administrative API for managing organizations, memberships & applications.",
-                //TermsOfService = new Uri("https://example.com/terms"),
-                Contact = new OpenApiContact
-                {
-                    Name = "github: jpda",
-                    Url = new Uri("https://github.com/jpda/b2c-approles")
-                },
-                License = new OpenApiLicense
-                {
-                    Name = "MIT",
-                    Url = new Uri("https://github.com/jpda/b2c-appRoles/blob/main/LICENSE")
-                }
-            });
+                options.SwaggerDoc(description.GroupName, CreateVersionInfo(description));
+            }
+
             options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
             {
                 Type = SecuritySchemeType.OAuth2,
@@ -85,6 +78,32 @@ namespace B2CAuthZ.Admin.WebApiHost
                 Description = "Use your b2x.studio account to access this API"
             });
             options.OperationFilter<SecurityRequirementsOperationFilter>();
+        }
+
+        // see this excellent post: https://christian-schou.dk/how-to-use-api-versioning-in-net-core-web-api/
+        private static OpenApiInfo CreateVersionInfo(ApiVersionDescription desc)
+        {
+            var info = new OpenApiInfo
+            {
+                Title = "B2X Organization & Authorization Administration",
+                Version = desc.ApiVersion.ToString("FF"),
+                Description = "Administrative API for managing organizations, memberships & applications.",
+                Contact = new OpenApiContact
+                {
+                    Name = "github: jpda",
+                    Url = new Uri("https://github.com/jpda/b2c-approles")
+                },
+                License = new OpenApiLicense
+                {
+                    Name = "MIT",
+                    Url = new Uri("https://github.com/jpda/b2c-appRoles/blob/main/LICENSE")
+                }
+            };
+            if (desc.IsDeprecated)
+            {
+                info.Description += " This API version has been deprecated.";
+            }
+            return info;
         }
     }
 }

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Identity.Web.Resource;
 
@@ -13,7 +12,7 @@ namespace B2CAuthZ.Admin.WebApiHost.Controllers
     [Authorize]
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("v{v:apiVersion}")]
+    [Route("v{version:apiVersion}")]
     public class ApplicationsController : ControllerBase
     {
         private readonly IApplicationRepository _appsRepo;

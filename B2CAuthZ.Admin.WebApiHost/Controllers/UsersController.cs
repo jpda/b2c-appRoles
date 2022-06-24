@@ -15,7 +15,7 @@ namespace B2CAuthZ.Admin.WebApiHost.Controllers
     [RequiredScope("Access")]
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("v{v:apiVersion}/[controller]")]
+    [Route("v{version:apiVersion}/[controller]")]
     public class UsersController : ControllerBase
     {
         private readonly IUserRepository _userRepo;

@@ -11,6 +11,9 @@ using Azure.Identity;
 using System;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 
 namespace B2CAuthZ.Admin.WebApiHost
 {
@@ -58,9 +61,24 @@ namespace B2CAuthZ.Admin.WebApiHost
                 x.JsonSerializerOptions.MaxDepth = 5;
             });
 
+            services.AddApiVersioning(config =>
+            {
+                config.DefaultApiVersion = new ApiVersion(1, 0);
+                config.ReportApiVersions = true;
+                config.AssumeDefaultVersionWhenUnspecified = true;
+                config.ApiVersionReader = ApiVersionReader.Combine(
+                    new UrlSegmentApiVersionReader(),
+                    new QueryStringApiVersionReader(),
+                    new HeaderApiVersionReader("api-version"));
+            });
+            // Add ApiExplorer to discover versions
+            services.AddVersionedApiExplorer(setup =>
+            {
+                setup.GroupNameFormat = "'v'VVV";
+                setup.SubstituteApiVersionInUrl = true;
+            });
             services.AddEndpointsApiExplorer();
 
-            services.AddApiVersioning();
             // see 
             services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerGenOptions>();
             services.AddSwaggerGen();
@@ -79,16 +97,21 @@ namespace B2CAuthZ.Admin.WebApiHost
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseCors("DevCorsPolicy");
             }
 
-            app.UseSwagger();
+            var apiVersionDescriptionProvider = app.ApplicationServices.GetRequiredService<IApiVersionDescriptionProvider>();
+            app.UseSwagger();            
             app.UseSwaggerUI(c =>
                 {
-                    c.SwaggerEndpoint("swagger/v1.0/swagger.json", "B2X Organization & Authorization Administration v1.0");
+                    foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
+                    {
+                        c.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
+                    }
                     c.RoutePrefix = string.Empty;
                     c.DefaultModelExpandDepth(1);
                     c.OAuthClientId(Configuration.GetValue<string>("SwaggerUIClientAuthentication:ClientId"));
