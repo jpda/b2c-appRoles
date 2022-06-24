@@ -13,8 +13,8 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Azure Container Registry Login 
-        uses: Azure/docker-login@v1 
-        with:
+      uses: Azure/docker-login@v1 
+      with:
         login-server: b2xve.azurecr.io
         username: ${{ secrets.ACR_USERNAME }}
         password: ${{ secrets.ACR_PASSWORD }} 
