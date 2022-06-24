@@ -8,6 +8,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Microsoft.Graph;
 using Azure.Identity;
+using System;
+using Microsoft.Extensions.Options;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace B2CAuthZ.Admin.WebApiHost
 {
@@ -25,37 +28,32 @@ namespace B2CAuthZ.Admin.WebApiHost
         {
             services.AddApplicationInsightsTelemetry();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAdB2C"));
+                .AddMicrosoftIdentityWebApi(Configuration.GetSection("ApiAuthorization"));
 
-            services.AddHttpContextAccessor(); // should already be here due to microsoft.identity.web above
-            services.AddOptions<AzureAdAdminConfiguration>()
-                .Configure<IConfiguration>((opt, config) =>
-                {
-                    config.GetSection("AzureAdDirectoryAdmin").Bind(opt);
-                });
-            // services.AddSingleton<IAuthenticationProvider, MsalTokenProvider>();
-            // services.AddSingleton<TokenCredentialAuthProvider>();
+            // services.AddHttpContextAccessor(); // should already be here due to microsoft.identity.web above
+            // services.AddOptions<AzureAdAdminConfiguration>()
+            //     .Configure<IConfiguration>((opt, config) =>
+            //     {
+            //         config.GetSection("AzureAdDirectoryAdmin").Bind(opt);
+            //     });
 
-            // services.AddSingleton<Azure.Core.TokenCredential>(a =>
-            // {
-            //     return new Azure.Identity.ClientSecretCredential(
-            //         Configuration.GetValue<string>("AzureAdDirectoryAdmin:TenantId"),
-            //         Configuration.GetValue<string>("AzureAdDirectoryAdmin:ClientId"),
-            //         Configuration.GetValue<string>("AzureAdDirectoryAdmin:ClientSecret"));
-            // });
             services.AddSingleton<GraphServiceClient>(sc =>
             {
                 return new GraphServiceClient(new Azure.Identity.ClientSecretCredential(
-                    Configuration.GetValue<string>("AzureAdDirectoryAdmin:TenantId"),
-                    Configuration.GetValue<string>("AzureAdDirectoryAdmin:ClientId"),
-                    Configuration.GetValue<string>("AzureAdDirectoryAdmin:ClientSecret")));
+                    Configuration.GetValue<string>("B2CGraphPrivilegedCredentials:TenantId"),
+                    Configuration.GetValue<string>("B2CGraphPrivilegedCredentials:ClientId"),
+                    Configuration.GetValue<string>("B2CGraphPrivilegedCredentials:ClientSecret")));
             });
 
-            services.AddOptions<OrganizationOptions>()
-                .Configure<IConfiguration>((opt, config) =>
-                {
-                    config.GetSection("OrganizationOptions").Bind(opt);
-                });
+            services.AddOptions<SwaggerUIClientAuthOptions>().Configure<IConfiguration>((opt, config) =>
+            {
+                config.GetSection("SwaggerUIClientAuth").Bind(opt);
+            });
+
+            services.AddOptions<OrganizationOptions>().Configure<IConfiguration>((opt, config) =>
+            {
+                config.GetSection("OrganizationOptions").Bind(opt);
+            });
 
             // these are very important to stay scoped - as they are configured _per request_ with the orgId
             services.AddScoped<IUserRepository, OrganizationFilteredUserRepository>();
@@ -63,17 +61,17 @@ namespace B2CAuthZ.Admin.WebApiHost
 
             services.AddControllers().AddJsonOptions(x =>
             {
-
                 // used to keep graph objects small
-                x.JsonSerializerOptions.IgnoreNullValues = true;
+                x.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
                 x.JsonSerializerOptions.MaxDepth = 5;
             });
 
+            services.AddEndpointsApiExplorer();
+
             services.AddApiVersioning();
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1.0", new OpenApiInfo { Title = "B2C Authorization Administration", Version = "v1.0" });
-            });
+            // see 
+            services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerGenOptions>();
+            services.AddSwaggerGen();
 
             services.AddCors(options =>
             {
@@ -96,16 +94,18 @@ namespace B2CAuthZ.Admin.WebApiHost
                 app.UseCors("DevCorsPolicy");
             }
 
-            app.UseSwagger(x =>
-                {
-                    // serializing as v2 for compat with swaxios codegen tool
-                    x.SerializeAsV2 = true;
-                });
+            app.UseSwagger();
             app.UseSwaggerUI(c =>
                 {
-                    c.SwaggerEndpoint("/swagger/v1.0/swagger.json", "B2C Authorization Administration v1.0");
+                    c.SwaggerEndpoint("swagger/v1.0/swagger.json", "B2X Organization & Authorization Administration v1.0");
                     c.RoutePrefix = string.Empty;
                     c.DefaultModelExpandDepth(1);
+                    c.OAuthClientId(Configuration.GetValue<string>("SwaggerUIClientAuth:ClientId"));
+                    c.OAuthScopes();//Configuration.GetValue<string>("SwaggerUIClientAuth:ClientId"));
+                    //c.OAuth2RedirectUrl(Configuration.GetValue<string>());
+                    //c.OAuthClientSecret(Configuration.GetValue<string>("AzureAdB2CSwaggerUIClient:ClientId"));
+                    c.OAuthUsePkce();
+
                 });
             app.UseHttpsRedirection();
             app.UseRouting();
